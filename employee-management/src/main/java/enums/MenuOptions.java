@@ -1,0 +1,13 @@
+package enums;
+
+public enum MenuOptions {
+	ADD,
+    VIEW,
+    UPDATE,
+    DELETE,
+    RESET_PASSWORD,
+    GRANT_ROLE,
+    REVOKE_ROLE,
+    CHANGE_PASSWORD,
+    EXIT
+}
