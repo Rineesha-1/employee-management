@@ -1,102 +1,125 @@
 package controller;
 
-import methods.AddEmployee;
-import methods.ChangePassword;
-import methods.ChangeRole;
-import methods.CheckLogin;
-import methods.DeleteEmployee;
-import methods.ViewEmployee;
-import methods.ResetPassword;
-import methods.UpdateEmployee;
+import enums.MenuOptions;
+import enums.RoleOptions;
+import exceptions.EmployeeNotFoundException;
+import exceptions.InvalidDataException;
+import services.AuthService;
+import services.EmployeeService;
+import store.DataStore;
 
 public class MenuController {
-    public static void displayMenu() {
-        if (LoginController.loginCheck()) {
-            ViewEmployee readEmployees = new ViewEmployee();
-            DeleteEmployee deleteEmployees = new DeleteEmployee();
-            UpdateEmployee updateEmployees = new UpdateEmployee();
-            ChangePassword changePass = new ChangePassword();
-            ResetPassword resetPass = new ResetPassword();
-            AddEmployee addEmployee = new AddEmployee();
-            ChangeRole changeRole = new ChangeRole();  
-            if (CheckLogin.firstLogin) {
-                System.out.println("Change default password.\n");
-                boolean changed = false;
-                while (!changed) {
-                    changed = changePass.changePassword();
-                }
-                CheckLogin.firstLogin = false;
-            }
-            boolean exit = false;
+
+    private MenuController() {
+    }
+    public static void start(DataStore store) {
+        AuthService auth = new AuthService(store);
+        EmployeeService employeeService = new EmployeeService(store);
+        auth.login();
+        if (auth.isFirstLogin()) {
+            System.out.println("Change default password.");
+            auth.forceChangePassword();
+        }
+        boolean exit = false;
+        while (!exit) {
+            RoleOptions role = auth.getLoggedInRole();
             System.out.println();
             System.out.println("EMPLOYEE MANAGEMENT SYSTEM");
-            System.out.println();
-            while (!exit) {
-                String role = CheckLogin.role;
-                if (role.equals("ADMIN")) {
-                    System.out.println("ADMIN Operations\n");
-                    for (AdminChoices c : AdminChoices.values()) {
-                        System.out.println(c);
-                    }
-                    try {
-                        System.out.println();
-                        System.out.print("Type your Choice: ");
-                        String input = Input.SC.nextLine().trim();
-                        AdminChoices choice = AdminChoices.valueOf(input.toUpperCase());
-                        switch (choice) {
-                            case ADD: addEmployee.insert(); break;
-                            case VIEW: readEmployees.view_all(); break;
-                            case DELETE: deleteEmployees.delete(); break;
-                            case UPDATE: updateEmployees.update(); break;
-                            case VIEW_BY_ID: readEmployees.view_by_id(); break;
-                            case RESET_PASSWORD: resetPass.resetPassword(); break;
-                            case GRANT_ROLE: changeRole.grantRole(); break;
-                            case REVOKE_ROLE: changeRole.revokeRole(); break;
-                            case EXIT: exit = true; break;
-                        }
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("Invalid choice\n");
-                    }
-                } else if (role.equals("MANAGER")) {
-                    System.out.println("MANAGER Operations\n");
-                    for (ManagerChoices c : ManagerChoices.values()) {
-                        System.out.println(c);
-                    }
-                    try {
-                        System.out.println();
-                        System.out.print("Type your Choice: ");
-                        String input = Input.SC.nextLine().trim();
-                        ManagerChoices choice = ManagerChoices.valueOf(input.toUpperCase());
-                        switch (choice) {
-                            case VIEW: readEmployees.view_all(); break;
-                            case UPDATE: updateEmployees.update(); break;
-                            case VIEW_BY_ID: readEmployees.view_by_id(); break;
-                            case EXIT: exit = true; break;
-                        }
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("Invalid choice\n");
-                    }
-                } else {
-                    System.out.println("USER Operations\n");
-                    for (UserChoices c : UserChoices.values()) {
-                        System.out.println(c);
-                    }
-                    try {
-                        System.out.println();
-                        System.out.print("Type your Choice: ");
-                        String input = Input.SC.nextLine().trim();
-                        UserChoices choice = UserChoices.valueOf(input.toUpperCase());
-                        switch (choice) {
-                            case VIEW: readEmployees.view_by_id(); break;
-                            case CHANGE_PASSWORD: changePass.changePassword(); break;
-                            case UPDATE: updateEmployees.update(); break;
-                            case EXIT: exit = true; break;
-                        }
-                    } catch (IllegalArgumentException e) {
-                        System.out.println("Invalid choice\n");
-                    }
-                }
+            System.out.println("Logged in as: " + role);
+            printMenu(role);
+            System.out.print("Enter Choice: ");
+            String input = Input.SC.nextLine().trim().toUpperCase();
+            MenuOptions choice;
+            try {
+                choice = MenuOptions.valueOf(input);
+            } catch (Exception e) {
+                System.out.println("Invalid choice");
+                continue;
             }
+            try {
+                switch (choice) {
+                    case ADD:
+                        ensureRole(role, RoleOptions.ADMIN);
+                        employeeService.addEmployee();
+                        break;
+                    case VIEW:
+                        if (role == RoleOptions.USER) {
+                            employeeService.viewById(auth.getLoggedInId());
+                        } else {
+                            System.out.print("Enter ID or ALL: ");
+                            String v = Input.SC.nextLine().trim();
+                            if (v.equalsIgnoreCase("ALL")) {
+                                employeeService.viewAll();
+                            } else {
+                                employeeService.viewById(v);
+                            }
+                        }
+                        break;
+                    case UPDATE:
+                        if (role == RoleOptions.USER) {
+                            employeeService.updateEmployee(auth.getLoggedInId(), true);
+                        } else {
+                            System.out.print("Enter employee id: ");
+                            String id = Input.SC.nextLine().trim();
+                            employeeService.updateEmployee(id, false);
+                        }
+                        break;
+                    case DELETE:
+                        ensureRole(role, RoleOptions.ADMIN);
+                        System.out.print("Enter empId to delete: ");
+                        employeeService.deleteEmployee(Input.SC.nextLine());
+                        break;
+                    case RESET_PASSWORD:
+                        ensureRole(role, RoleOptions.ADMIN);
+                        System.out.print("Enter employee id: ");
+                        employeeService.resetPassword(Input.SC.nextLine());
+                        break;
+                    case CHANGE_PASSWORD:
+                        auth.changePassword();
+                        break;
+                    case EXIT:
+                        exit = true;
+                        break;
+				default:
+					break;
+                }
+
+            } catch (EmployeeNotFoundException e) {
+                System.out.println(e.getMessage());
+            } catch (InvalidDataException e) {
+                System.out.println(e.getMessage());
+            } catch (Exception e) {
+                System.out.println("Something went wrong");
+            }
+        }
+    }
+    private static void ensureRole(RoleOptions actual, RoleOptions required)
+            throws InvalidDataException {
+        if (actual != required) {
+            throw new InvalidDataException("Access denied");
+        }
+    }
+    private static void printMenu(RoleOptions role) {
+        if (role == RoleOptions.ADMIN) {
+            System.out.println("ADD");
+            System.out.println("VIEW");
+            System.out.println("UPDATE");
+            System.out.println("DELETE");
+            System.out.println("CHANGE_PASSWORD");
+            System.out.println("RESET_PASSWORD");
+            System.out.println("GRANT_ROLE");
+            System.out.println("REVOKE_ROLE");
+            System.out.println("EXIT");
+        } else if (role == RoleOptions.MANAGER) {
+            System.out.println("VIEW");
+            System.out.println("UPDATE");
+            System.out.println("CHANGE_PASSWORD");
+            System.out.println("EXIT");
+        } else {
+            System.out.println("VIEW");
+            System.out.println("UPDATE");
+            System.out.println("CHANGE_PASSWORD");
+            System.out.println("EXIT");
         }
     }
 }
