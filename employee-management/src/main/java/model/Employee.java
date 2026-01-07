@@ -26,76 +26,63 @@ public class Employee {
     public String getName() {
         return name;
     }
-
     public String getDepartment() {
         return department;
     }
-
     public String getAddress() {
         return address;
     }
-
     public String getEmail() {
         return email;
     }
-
     public List<String> getRole() {
         return role;
     }
-
     public String getPassword() {
         return password;
     }
-
     public void setId(String id) {
         if (id == null || !ID_PATTERN.matcher(id.trim()).matches()) {
             throw new IllegalArgumentException("Invalid id");
         }
         this.id = id.toLowerCase();
     }
-
     public void setName(String name) {
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid name");
         }
         this.name = name;
     }
-
     public void setDepartment(String department) {
         if (department == null || department.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid department");
         }
         this.department = department;
     }
-
     public void setAddress(String address) {
         if (address == null || address.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid address");
         }
         this.address = address;
     }
-
     public void setEmail(String email) {
         if (email == null || !EMAIL_PATTERN.matcher(email.trim()).matches()) {
             throw new IllegalArgumentException("Invalid email");
         }
         this.email = email;
     }
-
     public void setRole(List<String> role) {
         this.role.clear();
         if (role != null) {
             this.role.addAll(role);
         }
     }
-
     public void setPassword(String password) {
         if (password == null || password.trim().isEmpty()) {
             throw new IllegalArgumentException("Invalid password");
         }
         this.password = password;
     }
-
     public boolean hasRole(String roleName) {
         if (roleName == null) {
             return false;
@@ -107,7 +94,6 @@ public class Employee {
         }
         return false;
     }
-
     @Override
     public String toString() {
         return "Emp ID: " + id +
@@ -117,7 +103,6 @@ public class Employee {
                 " | Email: " + email +
                 " | Roles: " + role;
     }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -125,7 +110,6 @@ public class Employee {
         Employee other = (Employee) obj;
         return Objects.equals(id, other.id);
     }
-
     @Override
     public int hashCode() {
         return Objects.hash(id);
