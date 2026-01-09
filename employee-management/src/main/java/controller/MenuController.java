@@ -7,14 +7,16 @@ import exceptions.InvalidDataException;
 import services.AuthService;
 import services.EmployeeService;
 import store.DataStore;
+import java.util.Scanner;
+import dao.EmployeeDAO;
 
 public class MenuController {
-
     private MenuController() {
     }
-    public static void start(DataStore store) {
-        AuthService auth = new AuthService(store);
-        EmployeeService employeeService = new EmployeeService(store);
+    public static void start(DataStore store,EmployeeDAO dao) {
+    	Scanner sc = new Scanner(System.in);
+        AuthService auth = new AuthService(store,dao,sc);
+        EmployeeService employeeService = new EmployeeService(store,dao,sc);
         auth.login();
         if (auth.isFirstLogin()) {
             System.out.println("Change default password.");
@@ -28,7 +30,7 @@ public class MenuController {
             System.out.println("Logged in as: " + role);
             printMenu(role);
             System.out.print("Enter Choice: ");
-            String input = Input.SC.nextLine().trim().toUpperCase();
+            String input = sc.nextLine().trim().toUpperCase();
             MenuOptions choice;
             try {
                 choice = MenuOptions.valueOf(input);
@@ -47,7 +49,7 @@ public class MenuController {
                             employeeService.viewById(auth.getLoggedInId());
                         } else {
                             System.out.print("Enter ID or ALL: ");
-                            String v = Input.SC.nextLine().trim();
+                            String v = sc.nextLine().trim();
                             if (v.equalsIgnoreCase("ALL")) {
                                 employeeService.viewAll();
                             } else {
@@ -60,22 +62,39 @@ public class MenuController {
                             employeeService.updateEmployee(auth.getLoggedInId(), true);
                         } else {
                             System.out.print("Enter employee id: ");
-                            String id = Input.SC.nextLine().trim();
+                            String id = sc.nextLine().trim();
                             employeeService.updateEmployee(id, false);
                         }
                         break;
                     case DELETE:
                         ensureRole(role, RoleOptions.ADMIN);
                         System.out.print("Enter empId to delete: ");
-                        employeeService.deleteEmployee(Input.SC.nextLine());
+                        employeeService.deleteEmployee(sc.nextLine());
                         break;
                     case RESET_PASSWORD:
                         ensureRole(role, RoleOptions.ADMIN);
                         System.out.print("Enter employee id: ");
-                        employeeService.resetPassword(Input.SC.nextLine());
+                        employeeService.resetPassword(sc.nextLine());
                         break;
                     case CHANGE_PASSWORD:
                         auth.changePassword();
+                        break;
+                    case GRANT_ROLE:
+                        ensureRole(role, RoleOptions.ADMIN);
+                        System.out.print("Enter employee id: ");
+                        String gid = sc.nextLine();
+                        System.out.print("Enter role to grant (ADMIN/MANAGER/USER): ");
+                        String gRole = sc.nextLine();
+                        employeeService.grantRole(gid, gRole);
+                        break;
+
+                    case REVOKE_ROLE:
+                        ensureRole(role, RoleOptions.ADMIN);
+                        System.out.print("Enter employee id: ");
+                        String rid = sc.nextLine();
+                        System.out.print("Enter role to revoke (ADMIN/MANAGER/USER): ");
+                        String rRole = sc.nextLine();
+                        employeeService.revokeRole(rid, rRole);
                         break;
                     case EXIT:
                         exit = true;
@@ -83,7 +102,6 @@ public class MenuController {
 				default:
 					break;
                 }
-
             } catch (EmployeeNotFoundException e) {
                 System.out.println(e.getMessage());
             } catch (InvalidDataException e) {

@@ -4,7 +4,7 @@ public enum UpdateOptions {
 	NAME,
 	DEPARTMENT,
 	EMAIL,
-	ADDRESS,
+	ADDRESS, 
 	ALL,
 	BACK
 }

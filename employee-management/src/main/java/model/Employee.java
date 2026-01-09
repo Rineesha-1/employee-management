@@ -5,11 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-public class Employee {
-
-    private static final Pattern ID_PATTERN =Pattern.compile("tek\\d+", Pattern.CASE_INSENSITIVE);
-
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
+public class Employee { 
     private String id;
     private String name;
     private String department;
@@ -17,6 +13,7 @@ public class Employee {
     private String email;
     private List<String> role;
     private String password;
+    private boolean firstLogin=true;
     public Employee() {
         role = new ArrayList<>();
     }
@@ -41,34 +38,25 @@ public class Employee {
     public String getPassword() {
         return password;
     }
-    public void setId(String id) {
-        if (id == null || !ID_PATTERN.matcher(id.trim()).matches()) {
-            throw new IllegalArgumentException("Invalid id");
-        }
+    public boolean isFirstLogin() {
+        return firstLogin;
+    }
+    public void setFirstLogin(boolean firstLogin) {
+        this.firstLogin = firstLogin;
+    }
+    public void setId(String id) { 
         this.id = id.toLowerCase();
     }
-    public void setName(String name) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Invalid name");
-        }
+    public void setName(String name) { 
         this.name = name;
     }
-    public void setDepartment(String department) {
-        if (department == null || department.trim().isEmpty()) {
-            throw new IllegalArgumentException("Invalid department");
-        }
+    public void setDepartment(String department) { 
         this.department = department;
     }
-    public void setAddress(String address) {
-        if (address == null || address.trim().isEmpty()) {
-            throw new IllegalArgumentException("Invalid address");
-        }
+    public void setAddress(String address) { 
         this.address = address;
     }
-    public void setEmail(String email) {
-        if (email == null || !EMAIL_PATTERN.matcher(email.trim()).matches()) {
-            throw new IllegalArgumentException("Invalid email");
-        }
+    public void setEmail(String email) { 
         this.email = email;
     }
     public void setRole(List<String> role) {
@@ -77,10 +65,7 @@ public class Employee {
             this.role.addAll(role);
         }
     }
-    public void setPassword(String password) {
-        if (password == null || password.trim().isEmpty()) {
-            throw new IllegalArgumentException("Invalid password");
-        }
+    public void setPassword(String password) { 
         this.password = password;
     }
     public boolean hasRole(String roleName) {
@@ -95,15 +80,6 @@ public class Employee {
         return false;
     }
     @Override
-    public String toString() {
-        return "Emp ID: " + id +
-                " | Name: " + name +
-                " | Department: " + department +
-                " | Address: " + address +
-                " | Email: " + email +
-                " | Roles: " + role;
-    }
-    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (!(obj instanceof Employee)) return false;
@@ -114,4 +90,10 @@ public class Employee {
     public int hashCode() {
         return Objects.hash(id);
     }
+    @Override
+    public String toString() {
+        return "Emp ID: " + id +" | Name: " + name +" | Department: " + department +
+                " | Address: " + address +" | Email: " + email +" | Roles: " + role;
+    }
+    
 }

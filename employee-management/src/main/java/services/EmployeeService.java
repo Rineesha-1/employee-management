@@ -1,105 +1,123 @@
 package services;
 
-import controller.Input;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import dao.EmployeeDAO;
+import enums.RoleOptions;
 import enums.UpdateOptions;
 import exceptions.EmployeeNotFoundException;
 import exceptions.InvalidDataException;
 import model.Employee;
 import store.DataStore;
-import empUtil.FileUtil;
-import empUtil.PasswordUtil;
-import java.util.ArrayList;
-import java.util.List;
 
 public class EmployeeService {
     private final DataStore store;
-    public EmployeeService(DataStore store) {
+    private final EmployeeDAO dao;
+    private final Scanner sc;
+    public EmployeeService(DataStore store, EmployeeDAO dao, Scanner sc) {
         this.store = store;
+        this.dao = dao;
+        this.sc = sc;
+    } 
+    private String normalizeAndValidateId(String id) throws InvalidDataException {
+        if (id == null)
+            throw new InvalidDataException("Employee id cannot be null");
+        if (!id.matches("(?i)tek\\d+"))
+            throw new InvalidDataException("Invalid employee id format");
+        return id.trim().toLowerCase();
     }
+    
+    private String normalizeRole(String role) throws InvalidDataException {
+        if (role == null) throw new InvalidDataException("Role cannot be null");
+        try {
+            return RoleOptions.valueOf(role.trim().toUpperCase()).name();
+        } catch (IllegalArgumentException e) {
+            throw new InvalidDataException("Invalid role");
+        }
+    }
+
+    private String normalizeEmail(String email) throws InvalidDataException {
+        if (email == null)
+            throw new InvalidDataException("Email cannot be null");
+        String e = email.trim().toLowerCase();
+        if (!e.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))
+            throw new InvalidDataException("Invalid email format");
+        return e;
+    }
+    private String validateNotBlank(String value, String field) throws InvalidDataException {
+        if (value == null || value.trim().isEmpty()) {
+            throw new InvalidDataException(field + " cannot be empty");
+        }
+        return value.trim();
+    }
+
+    private String generateTempPassword() {
+        return java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 6);
+    } 
     public void addEmployee() throws InvalidDataException {
         Employee emp = new Employee();
         System.out.print("Enter emp name: ");
-        emp.setName(Input.SC.nextLine());
+        emp.setName(validateNotBlank(sc.nextLine(), "Name"));
         System.out.print("Enter emp dept: ");
-        emp.setDepartment(Input.SC.nextLine());
+        emp.setDepartment(validateNotBlank(sc.nextLine(), "Dept"));
         System.out.print("Enter emp address: ");
-        emp.setAddress(Input.SC.nextLine());
+        emp.setAddress(validateNotBlank(sc.nextLine(), "Address"));
         System.out.print("Enter emp email: ");
-        emp.setEmail(Input.SC.nextLine());
+        emp.setEmail(normalizeEmail(sc.nextLine()));
         System.out.print("Enter emp role (ADMIN/MANAGER/USER): ");
-        String role = normalizeRole(Input.SC.nextLine());
-        emp.setRole(List.of(role));
-        String id = nextId();
-        emp.setId(id);
-        emp.setPassword(PasswordUtil.sha1(AuthService.DEFAULT_PASS));
-        store.getEmployees().put(emp.getId(), emp);
-        FileUtil.saveStore(store);
+        String role = normalizeRole(sc.nextLine());
+        List<String> roles = new ArrayList<>();
+        roles.add(role);
+        String tempPassword = generateTempPassword();
+        String hash = AuthService.hash(tempPassword);
+        emp.setFirstLogin(true);
+        String empId = dao.addEmployee(emp.getName(),emp.getDepartment(),emp.getAddress(),emp.getEmail(),roles,hash);
         System.out.println("Employee inserted successfully");
-        System.out.println("Login details: ID = " + emp.getId() + " , Default Password = " + AuthService.DEFAULT_PASS);
+        System.out.println("Employee ID   : " + empId);
+        System.out.println("Temp Password : " + tempPassword);
     }
-    public void deleteEmployee(String id) throws EmployeeNotFoundException {
-        Employee removed = store.getEmployees().remove(id.toLowerCase());
-        if (removed == null) throw new EmployeeNotFoundException("Employee doesn't exist");
-        FileUtil.saveStore(store);
+    
+    public void deleteEmployee(String id) throws InvalidDataException, EmployeeNotFoundException {
+        String empId = normalizeAndValidateId(id);
+        dao.deleteEmployee(empId);
         System.out.println("Employee deleted successfully");
     }
-    public void resetPassword(String id) throws EmployeeNotFoundException {
-        Employee emp = getEmployee(id);
-        emp.setPassword(PasswordUtil.sha1(AuthService.DEFAULT_PASS));
-        FileUtil.saveStore(store);
-        System.out.println("Password reset to default");
-    }
-    public void grantRole(String id, String role) throws EmployeeNotFoundException, InvalidDataException {
-        Employee emp = getEmployee(id);
-        String r = normalizeRole(role);
-        List<String> roles = new ArrayList<>(emp.getRole());
-        for (String x : roles) {
-            if (x.equalsIgnoreCase(r)) {
-                System.out.println("Cannot assign same role again");
-                return;
-            }
-        }
-        roles.add(r);
-        emp.setRole(roles);
-        FileUtil.saveStore(store);
-        System.out.println("Role granted");
-    }
-    public void revokeRole(String id, String role) throws EmployeeNotFoundException, InvalidDataException {
-        Employee emp = getEmployee(id);
-        String r = normalizeRole(role);
-        List<String> roles = new ArrayList<>(emp.getRole());
-        if (roles.size() <= 1) throw new InvalidDataException("At least one role must remain");
 
-        boolean removed = roles.removeIf(x -> x != null && x.equalsIgnoreCase(r));
-        if (!removed) {
-            System.out.println("Role doesn't exist");
-            return;
-        }
-        emp.setRole(roles);
-        FileUtil.saveStore(store);
-        System.out.println("Role revoked");
+    public void resetPassword(String id) throws InvalidDataException {
+        String empId = normalizeAndValidateId(id);
+        String tempPassword = generateTempPassword();
+        dao.resetPassword(empId, AuthService.hash(tempPassword));
+        System.out.println("Temporary password: " + tempPassword);
+    } 
+    public void grantRole(String id, String role) throws InvalidDataException {
+        String empId = normalizeAndValidateId(id);
+        String normalizedRole = normalizeRole(role);
+        dao.grantRole(empId, normalizedRole);
     }
-    public void viewAll() throws InvalidDataException {
-        if (store.getEmployees().isEmpty()) throw new InvalidDataException("No employees");
-        System.out.println();
-        System.out.println("Employee Details");
-        System.out.println();
-        for (Employee e : store.getEmployees().values()) {
-            System.out.println(e);
-        }
+
+    public void revokeRole(String id, String role) throws InvalidDataException {
+        String empId = normalizeAndValidateId(id);
+        String normalizedRole = normalizeRole(role);
+        dao.revokeRole(empId, normalizedRole);
     }
-    public void viewById(String id) throws EmployeeNotFoundException {
-        Employee emp = getEmployee(id);
-        System.out.println();
-        System.out.println("Employee Detail");
-        System.out.println();
-        System.out.println(emp);
+
+    public void viewAll() {
+        dao.viewEmployee();
     }
-    public void updateEmployee(String id, boolean selfUser) throws EmployeeNotFoundException, InvalidDataException {
-        Employee emp = getEmployee(id);
+
+    public void viewById(String id) throws InvalidDataException {
+        String empId = normalizeAndValidateId(id);
+        dao.viewEmployeeById(empId);
+    } 
+    
+    public void updateEmployee(String id, boolean selfUser) throws InvalidDataException, EmployeeNotFoundException {
+        String empId = normalizeAndValidateId(id);
+        Employee emp = store.getEmployees().get(empId);
+        if (emp == null)
+            throw new EmployeeNotFoundException("Employee doesn't exist");
         while (true) {
-            System.out.println();
-            System.out.println("Update Options:");
+            System.out.println("\nUpdate Options:");
             System.out.println("ALL");
             if (!selfUser) {
                 System.out.println("NAME");
@@ -108,70 +126,55 @@ public class EmployeeService {
             System.out.println("ADDRESS");
             System.out.println("EMAIL");
             System.out.println("BACK");
-            System.out.print("Type your Choice: ");
-            String c = Input.SC.nextLine().trim().toUpperCase();
-            UpdateOptions choice;
+            System.out.print("Choice: ");
+            UpdateOptions option;
             try {
-                choice = UpdateOptions.valueOf(c);
+                option = UpdateOptions.valueOf(sc.nextLine().trim().toUpperCase());
             } catch (IllegalArgumentException e) {
                 System.out.println("Invalid choice");
                 continue;
             }
-            if (choice == UpdateOptions.BACK) break;
-            switch (choice) {
-                case NAME: {
-                    if (selfUser) throw new InvalidDataException("USER cannot update NAME");
+            if (option == UpdateOptions.BACK) break;
+            switch (option) {
+            case NAME:
+                if (selfUser)
+                    throw new InvalidDataException("USER cannot update NAME");
+                System.out.print("Enter new name: ");
+                emp.setName(validateNotBlank(sc.nextLine(), "Name"));
+                break;
+            case DEPARTMENT:
+                if (selfUser)
+                    throw new InvalidDataException("USER cannot update DEPARTMENT");
+                System.out.print("Enter new department: ");
+                emp.setDepartment(validateNotBlank(sc.nextLine(), "Department"));
+                break;
+            case ADDRESS:
+                System.out.print("Enter new address: ");
+                emp.setAddress(validateNotBlank(sc.nextLine(), "Address"));
+                break;
+            case EMAIL:
+                System.out.print("Enter new email: ");
+                emp.setEmail(normalizeEmail(sc.nextLine()));
+                break;
+            case ALL:
+                if (!selfUser) {
                     System.out.print("Enter new name: ");
-                    emp.setName(Input.SC.nextLine());
-                }
-                case DEPARTMENT: {
-                    if (selfUser) throw new InvalidDataException("USER cannot update DEPARTMENT");
+                    emp.setName(validateNotBlank(sc.nextLine(), "Name"));
+
                     System.out.print("Enter new department: ");
-                    emp.setDepartment(Input.SC.nextLine());
+                    emp.setDepartment(validateNotBlank(sc.nextLine(), "Department"));
                 }
-                case ADDRESS: {
-                    System.out.print("Enter new address: ");
-                    emp.setAddress(Input.SC.nextLine());
-                }
-                case EMAIL: {
-                    System.out.print("Enter new email: ");
-                    emp.setEmail(Input.SC.nextLine());
-                }
-                case ALL: {
-                    if (!selfUser) {
-                        System.out.print("Enter new name: ");
-                        emp.setName(Input.SC.nextLine());
-                        System.out.print("Enter new department: ");
-                        emp.setDepartment(Input.SC.nextLine());
-                    }
-                    System.out.print("Enter new address: ");
-                    emp.setAddress(Input.SC.nextLine());
-                    System.out.print("Enter new email: ");
-                    emp.setEmail(Input.SC.nextLine());
-                }
-                default : {}
+                System.out.print("Enter new address: ");
+                emp.setAddress(validateNotBlank(sc.nextLine(), "Address"));
+                System.out.print("Enter new email: ");
+                emp.setEmail(normalizeEmail(sc.nextLine()));
+                break;
+            default:
+                System.out.println("Invalid option");
             }
-            FileUtil.saveStore(store);
+            dao.updateEmployee(emp.getId(),emp.getName(),emp.getDepartment(),emp.getAddress(),emp.getEmail()
+            );
             System.out.println("Updated successfully");
         }
-    }
-    private Employee getEmployee(String id) throws EmployeeNotFoundException {
-        if (id == null || id.trim().isEmpty()) throw new EmployeeNotFoundException("Employee doesn't exist");
-        Employee emp = store.getEmployees().get(id.trim().toLowerCase());
-        if (emp == null) throw new EmployeeNotFoundException("Employee doesn't exist");
-        return emp;
-    }
-    private String nextId() {
-        int next = store.getLastId() + 1;
-        store.setLastId(next);
-        return "tek" + next;
-    }
-    private String normalizeRole(String role) throws InvalidDataException {
-        if (role == null) throw new InvalidDataException("Invalid role");
-        String r = role.trim().toUpperCase();
-        if (!(r.equals("ADMIN") || r.equals("MANAGER") || r.equals("USER"))) {
-            throw new InvalidDataException("Invalid role");
-        }
-        return r;
     }
 }

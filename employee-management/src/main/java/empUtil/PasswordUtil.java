@@ -1,21 +1,20 @@
 package empUtil;
 
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 public final class PasswordUtil {
     private PasswordUtil() {}
-    public static String sha1(String password) {
+    public static String sha256(String password) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            byte[] hashedBytes=md.digest(password.getBytes());
-            String hashedPassword = "";
-            for(int i=0;i<hashedBytes.length;i++) {
-            	hashedPassword+=String.format("%02x", hashedBytes[i]);
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = md.digest(password.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
             }
-            return hashedPassword;
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Hashing failed");
+            return sb.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Password hashing failed");
         }
     }
 }

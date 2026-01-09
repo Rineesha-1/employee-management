@@ -4,32 +4,81 @@
   "department" : "ADMIN",
   "address" : "System",
   "email" : "admin@system.com",
-  "role" : [ "ADMIN" ],
-  "password" : "e38ad214943daad1d64c102faec29de4afe9da3d"
+  "role" : [ "ADMIN", "MANAGER" ],
+  "password" : "0b14d501a594442a01c6859541bcb3e8164d183d32937b851835442f69d5c94e",
+  "firstLogin" : false
 }, {
   "id" : "tek1",
-  "name" : "rin",
+  "name" : "rineesha",
   "department" : "dev",
   "address" : "hyd",
   "email" : "rin@gmail.com",
   "role" : [ "USER" ],
-  "password" : "4e05d4fa6439a3daf2b853e3df1858d42e861df1"
+  "password" : "a639b0fff7faebfe70eee4019addc1afe4ef6a5011732a7e4c1848c822ac45c9",
+  "firstLogin" : false
 }, {
-  "id" : "tek2",
-  "name" : "ram",
-  "department" : "dev",
-  "address" : "kurnool",
-  "email" : "ram1@gmail.com",
+  "id" : "tek8",
+  "name" : "sam",
+  "department" : "analyst",
+  "address" : "chennai",
+  "email" : "sam@gmail.com",
+  "role" : [ "USER" ],
+  "password" : "493b9add9275ffb13715fcc7050f2e1caa850366",
+  "firstLogin" : true
+}, {
+  "id" : "tek11",
+  "name" : "admin",
+  "department" : "admin",
+  "address" : "hyderabad",
+  "email" : "admin@gmail.com",
+  "role" : [ "ADMIN" ],
+  "password" : "e38ad214943daad1d64c102faec29de4afe9da3d",
+  "firstLogin" : false
+}, {
+  "id" : "tek9",
+  "name" : "ron",
+  "department" : "developer",
+  "address" : "hyderabad",
+  "email" : "ron@gmail.com",
   "role" : [ "MANAGER" ],
-  "password" : "4e05d4fa6439a3daf2b853e3df1858d42e861df1"
+  "password" : "de605c0d1e0c71733e1c1427edabbf28cf5037df",
+  "firstLogin" : true
 }, {
-  "id" : "tek3",
-  "name" : "eesha",
-  "department" : "ml dev",
-  "address" : "gachibowli",
-  "email" : "eesha@yahoo.in",
-  "role" : [ "USER", "MANAGER" ],
-  "password" : "4e05d4fa6439a3daf2b853e3df1858d42e861df1"
+  "id" : "tek12",
+  "name" : "kaustubh",
+  "department" : "dev",
+  "address" : "hyderabad",
+  "email" : "kau@gmail.com",
+  "role" : [ "USER" ],
+  "password" : "fdac810d0c09f25c5ddcee9976ab1f1ae1973dba7c65152d95b0937bc2a6c883",
+  "firstLogin" : true
+}, {
+  "id" : "tek6",
+  "name" : "jake",
+  "department" : "se",
+  "address" : "goa",
+  "email" : "jake@gmail.com",
+  "role" : [ "USER" ],
+  "password" : "aafdc23870ecbcd3d557b6423a8982134e17927e",
+  "firstLogin" : true
+}, {
+  "id" : "tek7",
+  "name" : "random",
+  "department" : "sq",
+  "address" : "dubai",
+  "email" : "random@gmail.com",
+  "role" : [ "USER" ],
+  "password" : "5baf1304cdac3cfbe4da30378c3e4be806ffdb3a",
+  "firstLogin" : true
+}, {
+  "id" : "tek10",
+  "name" : "amy",
+  "department" : "security",
+  "address" : "pune",
+  "email" : "amy@gmail.com",
+  "role" : [ "USER" ],
+  "password" : "4e05d4fa6439a3daf2b853e3df1858d42e861df1",
+  "firstLogin" : false
 }, {
   "id" : "tek4",
   "name" : "john",
@@ -37,7 +86,8 @@
   "address" : "usa",
   "email" : "john@yahoo.in",
   "role" : [ "MANAGER" ],
-  "password" : "aafdc23870ecbcd3d557b6423a8982134e17927e"
+  "password" : "aafdc23870ecbcd3d557b6423a8982134e17927e",
+  "firstLogin" : true
 }, {
   "id" : "tek5",
   "name" : "jake",
@@ -45,5 +95,15 @@
   "address" : "hyd",
   "email" : "jake@gmail.com",
   "role" : [ "USER" ],
-  "password" : "aafdc23870ecbcd3d557b6423a8982134e17927e"
+  "password" : "aafdc23870ecbcd3d557b6423a8982134e17927e",
+  "firstLogin" : true
+}, {
+  "id" : "tek2",
+  "name" : "ram",
+  "department" : "dev",
+  "address" : "kurnool",
+  "email" : "ram1@gmail.com",
+  "role" : [ "MANAGER" ],
+  "password" : "fdac810d0c09f25c5ddcee9976ab1f1ae1973dba7c65152d95b0937bc2a6c883",
+  "firstLogin" : false
 } ]
