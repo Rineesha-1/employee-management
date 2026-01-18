@@ -3,18 +3,18 @@
   "name" : "Admin",
   "department" : "ADMIN",
   "address" : "System",
-  "email" : "admin@system.com",
+  "email" : "admin@system1.com",
   "role" : [ "ADMIN", "MANAGER" ],
   "password" : "0b14d501a594442a01c6859541bcb3e8164d183d32937b851835442f69d5c94e",
   "firstLogin" : false
 }, {
   "id" : "tek1",
-  "name" : "rineesha",
-  "department" : "dev",
-  "address" : "hyd",
-  "email" : "rin@gmail.com",
-  "role" : [ "USER" ],
-  "password" : "a639b0fff7faebfe70eee4019addc1afe4ef6a5011732a7e4c1848c822ac45c9",
+  "name" : "Admin",
+  "department" : "ADMIN",
+  "address" : "System",
+  "email" : "admin@system.com",
+  "role" : [ "ADMIN" ],
+  "password" : "fdac810d0c09f25c5ddcee9976ab1f1ae1973dba7c65152d95b0937bc2a6c883",
   "firstLogin" : false
 }, {
   "id" : "tek8",
@@ -42,15 +42,6 @@
   "email" : "ron@gmail.com",
   "role" : [ "MANAGER" ],
   "password" : "de605c0d1e0c71733e1c1427edabbf28cf5037df",
-  "firstLogin" : true
-}, {
-  "id" : "tek12",
-  "name" : "kaustubh",
-  "department" : "dev",
-  "address" : "hyderabad",
-  "email" : "kau@gmail.com",
-  "role" : [ "USER" ],
-  "password" : "fdac810d0c09f25c5ddcee9976ab1f1ae1973dba7c65152d95b0937bc2a6c883",
   "firstLogin" : true
 }, {
   "id" : "tek6",
@@ -89,6 +80,15 @@
   "password" : "aafdc23870ecbcd3d557b6423a8982134e17927e",
   "firstLogin" : true
 }, {
+  "id" : "tek15",
+  "name" : "ram",
+  "department" : "dev",
+  "address" : "hyd",
+  "email" : "ramu@gmail.com",
+  "role" : [ "MANAGER" ],
+  "password" : "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918",
+  "firstLogin" : false
+}, {
   "id" : "tek5",
   "name" : "jake",
   "department" : "dev",
@@ -105,5 +105,23 @@
   "email" : "ram1@gmail.com",
   "role" : [ "MANAGER" ],
   "password" : "fdac810d0c09f25c5ddcee9976ab1f1ae1973dba7c65152d95b0937bc2a6c883",
+  "firstLogin" : false
+}, {
+  "id" : "tek13",
+  "name" : "mike",
+  "department" : "se",
+  "address" : "chennai",
+  "email" : "mike@gmail.com",
+  "role" : [ "MANAGER" ],
+  "password" : "12660a1a87ec4b8754b7dc1e1d88c1f3ad5041ce0e447bf570411ff2e84a8e7c",
+  "firstLogin" : true
+}, {
+  "id" : "tek14",
+  "name" : "beem",
+  "department" : "dev",
+  "address" : "ramu@gmail.com",
+  "email" : "ramu@gmail.com",
+  "role" : [ "USER" ],
+  "password" : "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918",
   "firstLogin" : false
 } ]
