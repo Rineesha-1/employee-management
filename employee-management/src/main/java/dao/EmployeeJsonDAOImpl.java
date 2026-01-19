@@ -8,32 +8,35 @@ import java.util.List;
 import empUtil.PasswordUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import empUtil.ConfigUtil;
 import exceptions.EmployeeNotFoundException;
 import exceptions.InvalidDataException;
 import model.Employee;
 
+//DAO implementation that stores employee data in JSON file
 public class EmployeeJsonDAOImpl implements EmployeeDAO {
-
-	private static final File FILE = new File("employees.json");
+	private final File file;
 	private static final ObjectMapper MAPPER = new ObjectMapper();
 	private final List<Employee> employees = new ArrayList<>();
 	private int lastId = 0;
-
+//default constructor
 	public EmployeeJsonDAOImpl() {
+		this(new File("employees.json"));
+	}
+	public EmployeeJsonDAOImpl(File file) {
+		this.file = file;
 		load();
 		ensureDefaultAdmin();
 		save();
 	}
-
+//loads data into memory
 	private void load() {
 		employees.clear();
 		lastId = 0;
-		if (!FILE.exists() || FILE.length() == 0)
+		if (!file.exists() || file.length() == 0)
 			return;
 		try {
-			List<Employee> list = MAPPER.readValue(FILE, new TypeReference<List<Employee>>() {
+			List<Employee> list = MAPPER.readValue(file, new TypeReference<List<Employee>>() {
 			});
 			if (list != null)
 				employees.addAll(list);
@@ -44,15 +47,14 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 			throw new RuntimeException("Failed to load employees.json", e);
 		}
 	}
-
+//saves data
 	private void save() {
 		try {
-			MAPPER.writerWithDefaultPrettyPrinter().writeValue(FILE, employees);
+			MAPPER.writerWithDefaultPrettyPrinter().writeValue(file, employees);
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to save employees.json", e);
 		}
 	}
-
 	private int extractNumber(String id) {
 		try {
 			if (id == null)
@@ -65,12 +67,12 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 			return 0;
 		}
 	}
-
+//auto generates next id 
 	private String nextId() {
 		lastId++;
 		return "tek" + lastId;
 	}
-
+	//finds by id
 	private Employee findByIdInternal(String id) {
 		if (id == null)
 			return null;
@@ -81,7 +83,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 		}
 		return null;
 	}
-
+	//finds by email
 	private Employee findByEmailInternal(String email) {
 		if (email == null)
 			return null;
@@ -92,7 +94,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 		}
 		return null;
 	}
-
+//checks default admin
 	private void ensureDefaultAdmin() {
 		String adminId = ConfigUtil.getDefaultAdminId();
 		String adminName = ConfigUtil.getDefaultAdminName();
@@ -137,7 +139,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 		}
 		lastId = Math.max(lastId, extractNumber(admin.getId()));
 	}
-
+	// Adds a new employee and returns generated employee ID
 	@Override
 	public String addEmployee(String name, String dept, String address, String email, List<String> role,
 			String hashPassword) {
@@ -156,7 +158,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 		save();
 		return id;
 	}
-
+//updates employee details
 	@Override
 	public void updateEmployee(String id, String name, String dept, String address, String email)
 			throws EmployeeNotFoundException {
@@ -169,7 +171,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 		emp.setEmail(email);
 		save();
 	}
-
+//deletes employee details
 	@Override
 	public void deleteEmployee(String id) throws EmployeeNotFoundException {
 		Employee emp = findByIdInternal(id);
@@ -178,7 +180,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 		employees.remove(emp);
 		save();
 	}
-
+//used to change self password
 	@Override
 	public void changePassword(String id, String password) throws EmployeeNotFoundException {
 		Employee emp = findByIdInternal(id);
@@ -188,18 +190,17 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 		emp.setFirstLogin(false);
 		save();
 	}
-
+//resets individual password 
 	@Override
 	public void resetPassword(String id, String password) throws EmployeeNotFoundException {
 		Employee emp = findByIdInternal(id);
 		if (emp == null)
 			throw new EmployeeNotFoundException("Employee not found");
-
 		emp.setPassword(password);
 		emp.setFirstLogin(true);
 		save();
 	}
-
+//grants a new role
 	@Override
 	public void grantRole(String id, String role) throws InvalidDataException, EmployeeNotFoundException {
 		Employee emp = findByIdInternal(id);
@@ -214,24 +215,39 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 		emp.setRole(roles);
 		save();
 	}
-
-	@Override
-	public void revokeRole(String id, String role) throws InvalidDataException, EmployeeNotFoundException {
-		Employee emp = findByIdInternal(id);
-		if (emp == null)
-			throw new EmployeeNotFoundException("Employee not found");
-		if (emp.getRole().size() == 1)
-			throw new InvalidDataException("Employee must have at least one role");
-		List<String> roles = new ArrayList<>(emp.getRole());
-		boolean removed = roles.removeIf(r -> r.equalsIgnoreCase(role));
-		if (!removed)
-			throw new InvalidDataException("Role does not exist for this employee");
-		if (roles.isEmpty())
-			throw new InvalidDataException("Employee must have at least one role");
-		emp.setRole(roles);
-		save();
+//revokes a role from employee
+	@Override 
+	public void revokeRole(String id, String role)
+	        throws InvalidDataException, EmployeeNotFoundException {
+	    Employee emp = findByIdInternal(id);
+	    if (emp == null) {
+	        throw new EmployeeNotFoundException("Employee not found");
+	    }
+	    List<String> roles = new ArrayList<>(emp.getRole()); 
+	    boolean found = false;
+	    for (String r : roles) {
+	        if (r.equalsIgnoreCase(role)) {
+	            found = true;
+	            break;
+	        }
+	    }
+	    if (!found) {
+	        throw new InvalidDataException("Employee does not have this role");
+	    }
+	    if (roles.size() == 1) {
+	        throw new InvalidDataException("Employee must have at least one role");
+	    }
+	    for (int i = 0; i < roles.size(); i++) {
+	        if (roles.get(i).equalsIgnoreCase(role)) {
+	            roles.remove(i);
+	            break;
+	        }
+	    }
+	    emp.setRole(roles);
+	    save();
 	}
 
+//retrieves employee by id
 	@Override
 	public Employee getEmployeeById(String id) throws EmployeeNotFoundException {
 		Employee emp = findByIdInternal(id);
@@ -239,7 +255,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 			throw new EmployeeNotFoundException("Employee not found");
 		return emp;
 	}
-
+//returns all employees
 	@Override
 	public List<Employee> getAllEmployees() {
 		return new ArrayList<>(employees);

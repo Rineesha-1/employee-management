@@ -5,7 +5,7 @@ import java.security.MessageDigest;
 public final class PasswordUtil {
 	private PasswordUtil() {
 	}
-
+	//encrypts passwords using sha256
 	public static String sha256(String password) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");

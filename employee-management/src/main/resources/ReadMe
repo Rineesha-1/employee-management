@@ -1,1 +1,33 @@
-Main class - App.java
+EMPLOYEE MANAGEMENT SYSTEM
+
+Main - application entry point
+
+StorageController – Lets user choose storage type
+
+MenuController – Displays role-based menu and navigation
+
+AuthService - Handles login authentication,change password and first time login 
+
+EmployeeService - business logic,validation and role based checks 
+
+EmployeeDAO - Interface for employee operations
+
+EmployeeJsonDAOImpl - File-based implementation using JSON
+
+EmployeeJdbcDAOImpl - Database-based implementation using JDBC
+
+Employee - employee entity and details 
+
+enums - roles,menu,update,storage options
+
+ConfigUtil – Reads application configuration values
+
+DatabaseUtil – Manages database connection
+
+PasswordUtil – Encrypts passwords using SHA-256
+
+app.properties – Default admin details
+
+db.properties – Database connection details
+
+employees.json – File storage data

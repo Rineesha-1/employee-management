@@ -6,15 +6,19 @@ import empUtil.PasswordUtil;
 import exceptions.EmployeeNotFoundException;
 import exceptions.InvalidDataException;
 import model.Employee;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+//DAO implementation that uses Database
 public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 	private Connection getConnection() throws SQLException {
-		return DatabaseUtil.getConnection();
+		return DatabaseUtil.getConnection();  //gets database connection
 	}
-
 	public EmployeeJdbcDAOImpl() {
 		try {
 			ensureDefaultAdmin();
@@ -22,7 +26,7 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 			throw new RuntimeException("Failed to initialize JDBC DAO", e);
 		}
 	}
-
+//retrieves roles for given employee
 	private List<String> getRoles(Connection conn, String empId) throws SQLException {
 		List<String> roles = new ArrayList<>();
 		try (PreparedStatement ps = conn.prepareStatement("select role from employee_roles where emp_id=?")) {
@@ -35,7 +39,7 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 		}
 		return roles;
 	}
-
+	// Maps database result set to Employee object
 	private Employee mapEmployee(Connection conn, ResultSet rs) throws SQLException {
 		Employee emp = new Employee();
 		emp.setId(rs.getString("emp_id"));
@@ -48,7 +52,7 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 		emp.setRole(getRoles(conn, emp.getId()));
 		return emp;
 	}
-
+//ensure default admin details
 	private void ensureDefaultAdmin() throws SQLException {
 		String adminId = ConfigUtil.getDefaultAdminId();
 		String adminName = ConfigUtil.getDefaultAdminName();
@@ -223,7 +227,7 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 
 	@Override
 	public void grantRole(String id, String role) throws InvalidDataException, EmployeeNotFoundException {
-		getEmployeeById(id); // ensure employee exists
+		getEmployeeById(id); 
 		try (Connection conn = getConnection()) {
 			try (PreparedStatement check = conn
 					.prepareStatement("select 1 from employee_roles where emp_id=? and role=?")) {
@@ -243,38 +247,51 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 			throw new RuntimeException("Grant role failed", e);
 		}
 	}
-
 	@Override
-	public void revokeRole(String id, String role) throws InvalidDataException, EmployeeNotFoundException {
-		getEmployeeById(id); // ensure exists
-		try (Connection conn = getConnection()) {
-			int count;
-			try (PreparedStatement ps = conn.prepareStatement("select count(*) from employee_roles where emp_id=?")) {
-				ps.setString(1, id);
-				try (ResultSet rs = ps.executeQuery()) {
-					rs.next();
-					count = rs.getInt(1);
-				}
-			}
-			if (count <= 1)
-				throw new InvalidDataException("Employee must have at least one role");
-			try (PreparedStatement ps = conn.prepareStatement("delete from employee_roles where emp_id=? and role=?")) {
-				ps.setString(1, id);
-				ps.setString(2, role);
-				if (ps.executeUpdate() == 0)
-					throw new InvalidDataException("Role does not exist");
-			}
-		} catch (SQLException e) {
-			throw new RuntimeException("Revoke role failed", e);
-		}
+	public void revokeRole(String id, String role)
+	        throws InvalidDataException, EmployeeNotFoundException {
+	    getEmployeeById(id);
+	    try (Connection conn = getConnection()) { 
+	        boolean exists = false;
+	        try (PreparedStatement ps = conn.prepareStatement(
+	                "select 1 from employee_roles where emp_id=? and role=?")) {
+	            ps.setString(1, id);
+	            ps.setString(2, role);
+	            try (ResultSet rs = ps.executeQuery()) {
+	                exists = rs.next();
+	            }
+	        }
+	        if (!exists) {
+	            throw new InvalidDataException("Employee does not have this role");
+	        } 
+	        int count;
+	        try (PreparedStatement ps = conn.prepareStatement(
+	                "select count(*) from employee_roles where emp_id=?")) {
+	            ps.setString(1, id);
+	            try (ResultSet rs = ps.executeQuery()) {
+	                rs.next();
+	                count = rs.getInt(1);
+	            }
+	        } 
+	        if (count == 1) {
+	            throw new InvalidDataException("Employee must have at least one role");
+	        } 
+	        try (PreparedStatement ps = conn.prepareStatement(
+	                "delete from employee_roles where emp_id=? and role=?")) {
+	            ps.setString(1, id);
+	            ps.setString(2, role);
+	            ps.executeUpdate();
+	        }
+	    } catch (SQLException e) {
+	        throw new RuntimeException("Revoke role failed", e);
+	    }
 	}
 
 	@Override
 	public Employee getEmployeeById(String id) throws EmployeeNotFoundException {
 		try (Connection conn = getConnection();
-				PreparedStatement ps = conn.prepareStatement(
-						"""
-								select e.emp_id, e.name, e.department, e.address, e.email, l.password, l.first_login from employees e join employee_login l on e.emp_id = l.emp_id where e.emp_id = ?""")) {
+				PreparedStatement ps = conn.prepareStatement("""
+						select e.emp_id, e.name, e.department, e.address, e.email, l.password, l.first_login from employees e join employee_login l on e.emp_id = l.emp_id where e.emp_id = ?""")) {
 			ps.setString(1, id);
 			try (ResultSet rs = ps.executeQuery()) {
 				if (!rs.next())
@@ -290,9 +307,8 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 	public List<Employee> getAllEmployees() {
 		List<Employee> list = new ArrayList<>();
 		try (Connection conn = getConnection();
-				PreparedStatement ps = conn.prepareStatement(
-						"""
-								select e.emp_id, e.name, e.department, e.address, e.email, l.password, l.first_login from employees e join employee_login l on e.emp_id = l.emp_id order by e.emp_id""")) {
+				PreparedStatement ps = conn.prepareStatement("""
+						select e.emp_id, e.name, e.department, e.address, e.email, l.password, l.first_login from employees e join employee_login l on e.emp_id = l.emp_id order by e.emp_id""")) {
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
 					list.add(mapEmployee(conn, rs));

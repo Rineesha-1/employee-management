@@ -23,6 +23,7 @@ public class EmployeeService {
 		this.auth = auth;
 	}
 
+	// validates id format tek<number>
 	private String normalizeAndValidateId(String id) throws InvalidDataException {
 		if (id == null || id.trim().isEmpty())
 			throw new InvalidDataException("Employee id cannot be null");
@@ -31,6 +32,7 @@ public class EmployeeService {
 		return id.trim().toLowerCase();
 	}
 
+	// validates role input
 	private String normalizeRole(String role) throws InvalidDataException {
 		if (role == null || role.trim().isEmpty())
 			throw new InvalidDataException("Role cannot be empty");
@@ -41,6 +43,7 @@ public class EmployeeService {
 		}
 	}
 
+	// validates email format
 	private String normalizeEmail(String email) throws InvalidDataException {
 		if (email == null || email.trim().isEmpty())
 			throw new InvalidDataException("Email cannot be empty");
@@ -50,6 +53,7 @@ public class EmployeeService {
 		return e;
 	}
 
+	// validates other fields like name,address,dept
 	private String validateNotBlank(String value, String field) throws InvalidDataException {
 		if (value == null || value.trim().isEmpty()) {
 			throw new InvalidDataException(field + " cannot be empty");
@@ -57,10 +61,12 @@ public class EmployeeService {
 		return value.trim();
 	}
 
+	// creates random temporary password
 	private String generateTempPassword() {
 		return java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 8);
 	}
 
+	// adds new employee with a random password
 	public void addEmployee() throws InvalidDataException {
 		System.out.print("Enter emp name: ");
 		String name = validateNotBlank(sc.nextLine(), "Name");
@@ -77,13 +83,15 @@ public class EmployeeService {
 		String tempPassword = generateTempPassword();
 		String empId = dao.addEmployee(name, dept, address, email, roles, PasswordUtil.sha256(tempPassword));
 		System.out.println("Employee added successfully");
-		System.out.println("Employee ID   : " + empId);
+		System.out.println("Employee ID : " + empId);
 		System.out.println("Temp Password : " + tempPassword);
 	}
 
+	// deletes employee based on id
 	public void deleteEmployee() throws InvalidDataException, EmployeeNotFoundException {
 		System.out.print("Enter empId to delete: ");
 		String empId = normalizeAndValidateId(sc.nextLine());
+		// prevents deleting own account
 		if (empId.equals(auth.getLoggedInId())) {
 			throw new InvalidDataException("Cannot delete your own account");
 		}
@@ -95,6 +103,7 @@ public class EmployeeService {
 		System.out.println("Employee deleted successfully");
 	}
 
+	// resets individual password and generates temporary password
 	public void resetPassword() throws InvalidDataException, EmployeeNotFoundException {
 		System.out.print("Enter employee id: ");
 		String empId = normalizeAndValidateId(sc.nextLine());
@@ -105,6 +114,7 @@ public class EmployeeService {
 		System.out.println("Temporary password: " + tempPassword);
 	}
 
+	// grants role for existing employee
 	public void grantRole() throws InvalidDataException, EmployeeNotFoundException {
 		System.out.print("Enter employee id: ");
 		String empId = normalizeAndValidateId(sc.nextLine());
@@ -119,8 +129,9 @@ public class EmployeeService {
 		System.out.println("Role granted successfully");
 	}
 
+	// revokes role from existing employee
 	public void revokeRole() throws InvalidDataException, EmployeeNotFoundException {
-		System.out.print("Enter employee id: "); // Fixed: removed println
+		System.out.print("Enter employee id: ");
 		String empId = normalizeAndValidateId(sc.nextLine());
 		if (empId.equals(ConfigUtil.getDefaultAdminId())) {
 			throw new InvalidDataException("Cannot modify default admin's roles");
@@ -133,9 +144,10 @@ public class EmployeeService {
 			throw new InvalidDataException("Cannot revoke your own ADMIN role");
 		}
 		dao.revokeRole(empId, role);
-		System.out.println("Role revoked successfully"); 
+		System.out.println("Role revoked successfully");
 	}
 
+	// displays all employees
 	public void viewAll() {
 		List<Employee> employees = dao.getAllEmployees();
 		if (employees.isEmpty()) {
@@ -147,12 +159,14 @@ public class EmployeeService {
 		}
 	}
 
+	// displays individual record of an employee based on id
 	public void viewById(String id) throws InvalidDataException, EmployeeNotFoundException {
 		String empId = normalizeAndValidateId(id);
 		Employee emp = dao.getEmployeeById(empId);
 		System.out.println(emp);
 	}
 
+	// displays all employees or specific id details
 	public void viewEmployees() throws InvalidDataException, EmployeeNotFoundException {
 		System.out.print("Enter ID or ALL: ");
 		String input = sc.nextLine().trim();
@@ -163,6 +177,7 @@ public class EmployeeService {
 		}
 	}
 
+	// updates existing employees based on the fields selected
 	public void updateEmployee(RoleOptions role, String loggedInId)
 			throws InvalidDataException, EmployeeNotFoundException {
 		String empId;
@@ -188,17 +203,14 @@ public class EmployeeService {
 			System.out.print("Choice: ");
 			String input = sc.nextLine().trim().toUpperCase();
 			UpdateOptions option;
-
 			try {
 				option = UpdateOptions.valueOf(input);
 			} catch (IllegalArgumentException e) {
 				System.out.println("Invalid choice");
 				continue;
 			}
-
 			if (option == UpdateOptions.BACK)
 				break;
-
 			try {
 				switch (option) {
 				case NAME:

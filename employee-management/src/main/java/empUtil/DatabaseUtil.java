@@ -7,6 +7,7 @@ import java.util.Properties;
 import java.io.InputStream;
 
 public class DatabaseUtil {
+	//db properties
 	private static final Properties property = new Properties();
 	static {
 		try {

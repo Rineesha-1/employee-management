@@ -27,7 +27,6 @@ public class MenuController {
 			System.out.print("Enter Choice: ");
 			String input = sc.nextLine().trim().toUpperCase();
 			MenuOptions choice;
-
 			try {
 				choice = MenuOptions.valueOf(input);
 			} catch (Exception e) {
@@ -99,15 +98,13 @@ public class MenuController {
 			}
 		}
 	}
-
 	// Validate user has required role
 	private static void ensureRole(RoleOptions actual, RoleOptions required) throws InvalidDataException {
 		if (actual != required) {
 			throw new InvalidDataException("Access denied: " + required + " role required");
 		}
 	}
-
-	// Display menu options based on role
+	// Displays menu options based on role
 	private static void printMenu(RoleOptions role) {
 		if (role == RoleOptions.ADMIN) {
 			System.out.println("ADD");

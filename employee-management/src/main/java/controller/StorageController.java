@@ -9,13 +9,13 @@ import java.util.Scanner;
 public class StorageController {
 	private StorageController() {
 	}
-
+	//starts the application
 	public static void startApplication() {
 		Scanner sc = new Scanner(System.in);
 		EmployeeDAO dao = chooseStorage(sc);
 		MenuController.start(dao, sc);
 	}
-
+	//selects storage type
 	private static EmployeeDAO chooseStorage(Scanner sc) {
 		System.out.println("EMPLOYEE MANAGEMENT SYSTEM");
 		while (true) {
