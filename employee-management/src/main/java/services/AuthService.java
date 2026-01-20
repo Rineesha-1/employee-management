@@ -22,9 +22,16 @@ public class AuthService {
 
 	// basic rule for password
 	private void validatePassword(String password) throws InvalidDataException {
-		if (password == null || password.length() < 6) {
-			throw new InvalidDataException("Password must be atleast 6 characters");
+		if (password == null) {
+			throw new InvalidDataException("Password can't be null");
 		}
+		String passwordRegex = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).{8,}$";
+		if (!password.matches(passwordRegex)) {
+	        throw new InvalidDataException(
+	            "Password must be at least 8 characters" +
+	            "(1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character)"
+	        );
+	    }
 	}
 
 	// login verification
