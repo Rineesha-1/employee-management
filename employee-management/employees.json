@@ -99,13 +99,40 @@
   "firstLogin" : true
 }, {
   "id" : "tek2",
-  "name" : "ram",
+  "name" : "rini",
   "department" : "dev",
   "address" : "kurnool",
   "email" : "ram1@gmail.com",
   "role" : [ "MANAGER" ],
   "password" : "fdac810d0c09f25c5ddcee9976ab1f1ae1973dba7c65152d95b0937bc2a6c883",
   "firstLogin" : false
+}, {
+  "id" : "tek20",
+  "name" : "Test User",
+  "department" : "IT",
+  "address" : "Test",
+  "email" : "test@test.com",
+  "role" : [ "ADMIN" ],
+  "password" : "9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c",
+  "firstLogin" : true
+}, {
+  "id" : "tek21",
+  "name" : "Test User",
+  "department" : "IT",
+  "address" : "Test",
+  "email" : "test@test.com",
+  "role" : [ "ADMIN" ],
+  "password" : "9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c",
+  "firstLogin" : true
+}, {
+  "id" : "tek22",
+  "name" : "Test User",
+  "department" : "IT",
+  "address" : "Test",
+  "email" : "test@test.com",
+  "role" : [ "ADMIN" ],
+  "password" : "9b8769a4a742959a2d0298c36fb70623f2dfacda8436237df08d8dfd5b37374c",
+  "firstLogin" : true
 }, {
   "id" : "tek4",
   "name" : "john",

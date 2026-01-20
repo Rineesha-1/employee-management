@@ -67,24 +67,64 @@ public class EmployeeService {
 	}
 
 	// adds new employee with a random password
-	public void addEmployee() throws InvalidDataException {
-		System.out.print("Enter emp name: ");
-		String name = validateNotBlank(sc.nextLine(), "Name");
-		System.out.print("Enter emp dept: ");
-		String dept = validateNotBlank(sc.nextLine(), "Department");
-		System.out.print("Enter emp address: ");
-		String address = validateNotBlank(sc.nextLine(), "Address");
-		System.out.print("Enter emp email: ");
-		String email = normalizeEmail(sc.nextLine());
-		System.out.print("Enter emp role (ADMIN/MANAGER/USER): ");
-		String role = normalizeRole(sc.nextLine());
-		List<String> roles = new ArrayList<>();
-		roles.add(role);
-		String tempPassword = generateTempPassword();
-		String empId = dao.addEmployee(name, dept, address, email, roles, PasswordUtil.sha256(tempPassword));
-		System.out.println("Employee added successfully");
-		System.out.println("Employee ID : " + empId);
-		System.out.println("Temp Password : " + tempPassword);
+	public void addEmployee() {
+	    String name;
+	    while (true) {
+	        try {
+	            System.out.print("Enter emp name: ");
+	            name = validateNotBlank(sc.nextLine(), "Name");
+	            break;
+	        } catch (InvalidDataException e) {
+	            System.out.println(e.getMessage());
+	        }
+	    }
+	    String dept;
+	    while (true) {
+	        try {
+	            System.out.print("Enter emp dept: ");
+	            dept = validateNotBlank(sc.nextLine(), "Department");
+	            break;
+	        } catch (InvalidDataException e) {
+	            System.out.println(e.getMessage());
+	        }
+	    }
+	    String address;
+	    while (true) {
+	        try {
+	            System.out.print("Enter emp address: ");
+	            address = validateNotBlank(sc.nextLine(), "Address");
+	            break;
+	        } catch (InvalidDataException e) {
+	            System.out.println(e.getMessage());
+	        }
+	    }
+	    String email;
+	    while (true) {
+	        try {
+	            System.out.print("Enter emp email: ");
+	            email = normalizeEmail(sc.nextLine());
+	            break;
+	        } catch (InvalidDataException e) {
+	            System.out.println(e.getMessage());
+	        }
+	    }
+	    String role;
+	    while (true) {
+	        try {
+	            System.out.print("Enter emp role (ADMIN/MANAGER/USER): ");
+	            role = normalizeRole(sc.nextLine());
+	            break;
+	        } catch (InvalidDataException e) {
+	            System.out.println(e.getMessage());
+	        }
+	    }
+	    List<String> roles = new ArrayList<>();
+	    roles.add(role);
+	    String tempPassword = generateTempPassword();
+	    String empId = dao.addEmployee(name, dept, address, email,roles, PasswordUtil.sha256(tempPassword));
+	    System.out.println("Employee added successfully");
+	    System.out.println("Employee ID   : " + empId);
+	    System.out.println("Temp Password : " + tempPassword);
 	}
 
 	// deletes employee based on id
