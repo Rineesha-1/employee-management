@@ -2,15 +2,19 @@ package controller;
 
 import enums.MenuOptions;
 import enums.RoleOptions;
+import exceptions.EmployeeDataAccessException;
 import exceptions.EmployeeNotFoundException;
 import exceptions.InvalidDataException;
 import services.AuthService;
 import services.EmployeeService;
 import java.util.Scanner;
 import dao.EmployeeDAO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MenuController {
-	public static void start(EmployeeDAO dao, Scanner sc) {
+	private static final Logger logger = LoggerFactory.getLogger(MenuController.class);
+	public static void start(EmployeeDAO dao, Scanner sc) throws EmployeeDataAccessException {
 		AuthService auth = new AuthService(dao, sc);
 		EmployeeService employeeService = new EmployeeService(dao, sc, auth);
 		auth.login();
@@ -20,17 +24,35 @@ public class MenuController {
 			auth.forceChangePassword();
 		}
 		boolean exit = false;
+		int invalidMenuAttempts=0;
 		while (!exit) {
 			RoleOptions role = auth.getLoggedInRole();
 			System.out.println();
 			printMenu(role);
 			System.out.print("Enter Choice: ");
-			String input = sc.nextLine().trim().toUpperCase();
+			String input = null;
+			int attempts = 0;
+			while (attempts < 3) {
+			    input = sc.nextLine().trim().toUpperCase();
+			    if (!input.isEmpty()) break;
+			    System.out.println("Input cannot be empty");
+			    attempts++;
+			}
+			if (input == null || input.isEmpty()) {
+			    System.out.println("Too many invalid attempts");
+			    continue;
+			}
 			MenuOptions choice;
 			try {
 				choice = MenuOptions.valueOf(input);
+				invalidMenuAttempts = 0;
 			} catch (Exception e) {
 				System.out.println("Invalid choice. Try again");
+				invalidMenuAttempts++;
+			    if (invalidMenuAttempts >= 3) {
+			        System.out.println("Too many invalid attempts. Logging out...");
+			        break;
+			    }
 				continue;
 			}
 			try {
@@ -92,9 +114,9 @@ public class MenuController {
 				}
 			} catch (EmployeeNotFoundException | InvalidDataException e) {
 				System.out.println(e.getMessage());
-			} catch (Exception e) {
-				System.out.println("Something went wrong");
-				// e.printStackTrace();
+			}catch (Exception e) {
+			    logger.error("Unexpected error in MenuController", e);
+			    System.out.println("Something went wrong");
 			}
 		}
 	}

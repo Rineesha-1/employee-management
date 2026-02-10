@@ -1,0 +1,7 @@
+2026-02-10 16:56:06 INFO  controller.StorageController - Application started
+2026-02-10 16:56:06 INFO  controller.StorageController - Application started
+2026-02-10 16:56:06 INFO  controller.StorageController - Application started
+2026-02-10 17:14:25 INFO  controller.StorageController - Application started
+2026-02-10 17:14:40 INFO  controller.StorageController - Storage selected: DATABASE
+2026-02-10 17:14:40 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-10 17:14:47 INFO  services.AuthService - Login successful for employeeId=tek1

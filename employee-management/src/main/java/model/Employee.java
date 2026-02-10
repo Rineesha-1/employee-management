@@ -13,6 +13,7 @@ public class Employee {
 	private List<String> role;
 	private String password;
 	private boolean firstLogin = true;
+	private boolean deleted = false;
 
 	public Employee() {
 		role = new ArrayList<>();
@@ -40,6 +41,12 @@ public class Employee {
 	}
 	public boolean isFirstLogin() {
 		return firstLogin;
+	}
+	public boolean isDeleted() {
+		return deleted;
+	}
+	public void setDeleted(boolean deleted) {
+		this.deleted=deleted;
 	}
 	public void setFirstLogin(boolean firstLogin) {
 		this.firstLogin = firstLogin;
@@ -94,6 +101,9 @@ public class Employee {
 	}
 	@Override
 	public String toString() {
+		if(deleted) {
+			return "";
+		}
 		return "Emp ID: " + id + " | Name: " + name + " | Department: " + department + " | Address: " + address+ " | Email: " + email + " | Roles: " + role;
 	}
 

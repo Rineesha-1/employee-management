@@ -78,6 +78,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 			return null;
 		String key = id.trim().toLowerCase();
 		for (Employee e : employees) {
+			if (e.isDeleted()) continue;
 			if (e.getId() != null && e.getId().equalsIgnoreCase(key))
 				return e;
 		}
@@ -177,7 +178,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 		Employee emp = findByIdInternal(id);
 		if (emp == null)
 			throw new EmployeeNotFoundException("Employee not found");
-		employees.remove(emp);
+		emp.setDeleted(true);
 		save();
 	}
 //used to change self password
@@ -258,6 +259,12 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 //returns all employees
 	@Override
 	public List<Employee> getAllEmployees() {
-		return new ArrayList<>(employees);
+	    List<Employee> list = new ArrayList<>(); 
+	    for (Employee e : employees) { 
+	        if (!e.isDeleted()) {
+	            list.add(e);
+	        }
+	    }
+	    return list;
 	}
 }
