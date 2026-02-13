@@ -1,7 +1,33 @@
-2026-02-10 16:56:06 INFO  controller.StorageController - Application started
-2026-02-10 16:56:06 INFO  controller.StorageController - Application started
-2026-02-10 16:56:06 INFO  controller.StorageController - Application started
-2026-02-10 17:14:25 INFO  controller.StorageController - Application started
-2026-02-10 17:14:40 INFO  controller.StorageController - Storage selected: DATABASE
-2026-02-10 17:14:40 INFO  services.AuthService - LOGIN CREDENTIALS
-2026-02-10 17:14:47 INFO  services.AuthService - Login successful for employeeId=tek1
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 WARN  services.AuthService - Invalid login attempt for employeeId=tek1
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 WARN  services.AuthService - Invalid login attempt for employeeId=tek1
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 WARN  services.AuthService - Invalid login attempt for employeeId=tek1
+2026-02-13 10:28:58 ERROR services.AuthService - Maximum login attempts reached.
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 INFO  services.AuthService - Login successful for employeeId=tek1
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 INFO  services.AuthService - Login successful for employeeId=tek1
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 ERROR services.AuthService - Maximum login attempts reached.
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 ERROR services.AuthService - Maximum login attempts reached.
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 INFO  services.AuthService - Login successful for employeeId=tek1
+2026-02-13 10:28:58 INFO  services.AuthService - Password changed successfully for employeeId=tek1
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 WARN  services.AuthService - Invalid login credentials for employeeId=tek1
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 WARN  services.AuthService - Invalid login credentials for employeeId=tek1
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 WARN  services.AuthService - Invalid login credentials for employeeId=tek1
+2026-02-13 10:28:58 ERROR services.AuthService - Maximum login attempts reached.
+2026-02-13 10:28:58 INFO  services.AuthService - User logged out: null
+2026-02-13 10:28:58 INFO  services.AuthService - LOGIN CREDENTIALS
+2026-02-13 10:28:58 INFO  services.AuthService - Login successful for employeeId=tek1
+2026-02-13 10:29:05 INFO  controller.StorageController - Application started

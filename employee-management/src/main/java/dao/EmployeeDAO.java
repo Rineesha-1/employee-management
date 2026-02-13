@@ -1,7 +1,7 @@
 package dao;
 
-import java.util.List;
-import exceptions.InvalidDataException;
+import java.util.List; 
+import exceptions.ValidationException;
 import exceptions.EmployeeDataAccessException;
 import exceptions.EmployeeNotFoundException;
 import model.Employee;
@@ -12,8 +12,8 @@ public interface EmployeeDAO {
 	void deleteEmployee(String id) throws EmployeeNotFoundException, EmployeeDataAccessException;
 	void changePassword(String id, String password) throws EmployeeNotFoundException, EmployeeDataAccessException;
 	void resetPassword(String id, String password) throws EmployeeNotFoundException, EmployeeDataAccessException;
-	void grantRole(String id, String role) throws InvalidDataException, EmployeeNotFoundException, EmployeeDataAccessException;
-	void revokeRole(String id, String role) throws InvalidDataException, EmployeeNotFoundException, EmployeeDataAccessException;
+	void grantRole(String id, String role) throws EmployeeNotFoundException, EmployeeDataAccessException;
+	void revokeRole(String id, String role) throws EmployeeNotFoundException, EmployeeDataAccessException;
 	Employee getEmployeeById(String id) throws EmployeeNotFoundException, EmployeeDataAccessException;
 	List<Employee> getAllEmployees() throws EmployeeDataAccessException;
 }

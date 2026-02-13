@@ -1,135 +1,113 @@
 package services;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.ByteArrayInputStream;
-import java.util.List;
-import java.util.Scanner;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import dao.EmployeeDAO;
-import dao.EmployeeJsonDAOImpl;
 import empUtil.PasswordUtil;
 import enums.RoleOptions;
-import exceptions.EmployeeDataAccessException;
 import exceptions.EmployeeNotFoundException;
-import exceptions.InvalidDataException;
+import exceptions.ValidationException;
 import model.Employee;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import java.util.List;
+import java.util.Scanner;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows; 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 
 class AuthServiceTest {
 
-    private EmployeeDAO dao;
-    @BeforeEach
-    void setup() {
-        dao = new EmployeeJsonDAOImpl();
-    }
-    @Test
-    void login_success() throws EmployeeDataAccessException { 
-        String password = "Pass@123";
-        String hashed = PasswordUtil.sha256(password);
-        String empId = dao.addEmployee("Test User","IT","Test Address","test@test.com",List.of("ADMIN"),hashed);
-        String input = empId + "\n" + password + "\n";
-        Scanner sc = new Scanner(new ByteArrayInputStream(input.getBytes()));
+	private EmployeeDAO dao;
+	private Scanner sc;
+	private AuthService auth;
 
-        AuthService authService = new AuthService(dao, sc);
+	@BeforeEach
+	void setup() {
+		dao = mock(EmployeeDAO.class);
+		sc = mock(Scanner.class);
+		auth = new AuthService(dao, sc);
+	}
 
-        // Act
-        authService.login();
+	@Test
+	void login_validCredentials_shouldSucceed() throws Exception {
+		Employee emp = new Employee();
+		emp.setId("tek1");
+		emp.setPassword(PasswordUtil.sha256("pass"));
+		emp.setRole(List.of("ADMIN"));
+		when(sc.nextLine()).thenReturn("tek1", "pass");
+		when(dao.getEmployeeById("tek1")).thenReturn(emp);
+		auth.login();
+		assertEquals("tek1", auth.getLoggedInId());
+		assertEquals(RoleOptions.ADMIN, auth.getLoggedInRole());
+	} 
+	@Test
+	void login_emptyId_shouldFail() {
+		when(sc.nextLine()).thenReturn("", "").thenReturn("", "").thenReturn("", "");
+		assertThrows(ValidationException.class, () -> auth.login());
+	}
 
-        // Assert
-        assertEquals(empId, authService.getLoggedInId());
-        assertEquals(RoleOptions.ADMIN, authService.getLoggedInRole());
-        assertTrue(authService.isFirstLogin());
-    }
+	@Test
+	void login_emptyPassword_shouldFail() {
+		when(sc.nextLine()).thenReturn("tek1", "").thenReturn("tek2", "").thenReturn("tek1", "");
+		assertThrows(ValidationException.class, () -> auth.login());
+	} 
+	@Test
+	void login_invalidPassword_shouldFail() throws Exception {
+		Employee emp = new Employee();
+		emp.setId("tek1");
+		emp.setPassword(PasswordUtil.sha256("correct"));
+		when(sc.nextLine()).thenReturn("tek1", "pass12", "tek1", "pass1", "tek1", "pass");
+		when(dao.getEmployeeById("tek1")).thenReturn(emp);
+		assertThrows(ValidationException.class, () -> auth.login());
+	} 
+	@Test
+	void login_employeeNotFound_shouldFail() throws Exception {
+		when(sc.nextLine()).thenReturn("tek1", "pass", "tek1", "pass", "tek1", "pass");
+		when(dao.getEmployeeById("tek1")).thenThrow(new EmployeeNotFoundException("Not found"));
+		assertThrows(ValidationException.class, () -> auth.login());
+	}
+	@Test
+	void logout_shouldClearSession() {
+	    auth.logout();
+	    assertEquals(null, auth.getLoggedInId());
+	}
+	@Test
+	void changePassword_validInput_shouldSucceed() throws Exception {
+		Employee emp = new Employee();
+		emp.setId("tek1");
+		emp.setPassword(PasswordUtil.sha256("old"));
+		when(sc.nextLine()).thenReturn("tek1", "old");
+		when(dao.getEmployeeById("tek1")).thenReturn(emp);
+		auth.login();
+		when(sc.nextLine()).thenReturn("NewPass@123", "NewPass@123");
+		auth.changePassword();
+		verify(dao).changePassword(eq("tek1"), any());
+	}
 
-    @Test
-    void login_invalidPassword_thenSuccess() throws EmployeeDataAccessException {
-        // Arrange
-        String correctPassword = "Pass@123";
-        String wrongPassword = "Wrong@123";
+	@Test
+	void changePassword_mismatch_shouldFail() throws Exception {
+		Employee emp = new Employee();
+		emp.setId("tek1");
+		emp.setPassword(PasswordUtil.sha256("old"));
+		when(sc.nextLine()).thenReturn("tek1", "old");
+		when(dao.getEmployeeById("tek1")).thenReturn(emp);
+		auth.login();
+		when(sc.nextLine()).thenReturn("NewPass@123", "WrongPass@123");
+		assertThrows(ValidationException.class, () -> auth.changePassword());
+	}
 
-        String empId = dao.addEmployee(
-                "User2",
-                "IT",
-                "Addr",
-                "u2@test.com",
-                List.of("USER"),
-                PasswordUtil.sha256(correctPassword)
-        );
-
-        // first attempt wrong, second correct
-        String input =
-                empId + "\n" + wrongPassword + "\n" +
-                empId + "\n" + correctPassword + "\n";
-
-        Scanner sc = new Scanner(new ByteArrayInputStream(input.getBytes()));
-        AuthService authService = new AuthService(dao, sc);
-
-        // Act
-        authService.login();
-
-        // Assert
-        assertEquals(empId, authService.getLoggedInId());
-        assertEquals(RoleOptions.USER, authService.getLoggedInRole());
-    }
-
-    @Test
-    void changePassword_success() throws InvalidDataException, EmployeeNotFoundException, EmployeeDataAccessException {
-        // Arrange
-        String oldPassword = "Old@1234";
-        String newPassword = "New@1234";
-
-        String empId = dao.addEmployee(
-                "User3",
-                "IT",
-                "Addr",
-                "u3@test.com",
-                List.of("USER"),
-                PasswordUtil.sha256(oldPassword)
-        );
-
-        // login + change password inputs
-        String input =
-                empId + "\n" + oldPassword + "\n" +
-                newPassword + "\n" + newPassword + "\n";
-
-        Scanner sc = new Scanner(new ByteArrayInputStream(input.getBytes()));
-        AuthService authService = new AuthService(dao, sc);
-
-        // Act
-        authService.login();
-        authService.changePassword();
-
-        // Assert
-        Employee emp = dao.getEmployeeById(empId);
-        assertEquals(PasswordUtil.sha256(newPassword), emp.getPassword());
-        assertFalse(emp.isFirstLogin());
-    }
-
-    @Test
-    void changePassword_sameAsOld_throwsException() throws EmployeeDataAccessException {
-        // Arrange
-        String password = "Same@123";
-
-        String empId = dao.addEmployee(
-                "User4",
-                "IT",
-                "Addr",
-                "u4@test.com",
-                List.of("USER"),
-                PasswordUtil.sha256(password)
-        );
-
-        String input =
-                empId + "\n" + password + "\n" +
-                password + "\n" + password + "\n";
-
-        Scanner sc = new Scanner(new ByteArrayInputStream(input.getBytes()));
-        AuthService authService = new AuthService(dao, sc);
-
-        authService.login();
-
-        // Assert
-        assertThrows(Exception.class, () -> authService.changePassword());
-    }
+	@Test
+	void changePassword_samePassword_shouldFail() throws Exception {
+		Employee emp = new Employee();
+		emp.setId("tek1");
+		emp.setPassword(PasswordUtil.sha256("same"));
+		when(sc.nextLine()).thenReturn("tek1", "same");
+		when(dao.getEmployeeById("tek1")).thenReturn(emp);
+		auth.login();
+		when(sc.nextLine()).thenReturn("same", "same");
+		assertThrows(ValidationException.class, () -> auth.changePassword());
+	}
 }

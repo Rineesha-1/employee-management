@@ -3,8 +3,8 @@ package services;
 import enums.RoleOptions;
 import dao.EmployeeDAO;
 import exceptions.EmployeeDataAccessException;
-import exceptions.EmployeeNotFoundException;
-import exceptions.InvalidDataException;
+import exceptions.EmployeeNotFoundException; 
+import exceptions.ValidationException;
 import model.Employee;
 import empUtil.PasswordUtil;
 import java.util.Scanner;
@@ -27,13 +27,13 @@ public class AuthService {
 	}
 
 	// basic rule for password
-	private void validatePassword(String password) throws InvalidDataException {
+	private void validatePassword(String password){
 		if (password == null) {
-			throw new InvalidDataException("Password can't be null");
+			throw new ValidationException("Password can't be null");
 		}
 		String passwordRegex = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).{8,}$";
 		if (!password.matches(passwordRegex)) {
-	        throw new InvalidDataException(
+			throw new ValidationException(
 	            "Password must be at least 8 characters" +
 	            "(1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character)"
 	        );
@@ -41,22 +41,28 @@ public class AuthService {
 	}
 
 	// login verification
-	public void login() throws EmployeeDataAccessException {
+	public void login() throws EmployeeDataAccessException{
 		int attempts=0;
 		while (attempts<MAX_LOGIN_ATTEMPTS) {
 			logger.info("LOGIN CREDENTIALS");
 			System.out.print("Employee ID: ");
 			String id = sc.nextLine().trim().toLowerCase();
+			if (id.isEmpty()) {
+	            attempts++;
+	            System.out.println("Employee ID cannot be empty"); 
+	            continue;
+	        }
 			System.out.print("Password: ");
 			String password = sc.nextLine().trim();
-			if (id.isEmpty() || password.isEmpty()) {
-	            logger.warn("Employee ID or password is empty");
+			if (password.isEmpty()) {
 	            attempts++;
+	            System.out.println("Password cannot be empty"); 
 	            continue;
 	        }
 			try {
 				Employee emp = dao.getEmployeeById(id); 
-				if (emp.isDeleted() || !PasswordUtil.sha256(password).equals(emp.getPassword())) {
+				if (!PasswordUtil.sha256(password).equals(emp.getPassword())) {
+					System.out.println("Invalid login credentials");
 					logger.warn("Invalid login credentials for employeeId={}", id);
 					attempts++;
 					continue;
@@ -71,23 +77,23 @@ public class AuthService {
 				attempts++;
 			}
 		}
-		logger.error("Maximum login attempts reached.Exiting...");
-		throw new RuntimeException("Login failed");
+		logger.error("Maximum login attempts reached.");
+		throw new ValidationException("Maximum login attempts reached. Login failed.");
 	}
 
 	// enables employee to change password
-	public void changePassword() throws InvalidDataException, EmployeeNotFoundException, EmployeeDataAccessException {
+	public void changePassword() throws EmployeeNotFoundException, EmployeeDataAccessException {
 		System.out.print("Enter new password: ");
 		String newPassword = sc.nextLine().trim();
 		validatePassword(newPassword);
 		System.out.print("Re-enter new password: ");
 		String confirmPassword = sc.nextLine().trim();
 		if (!newPassword.equals(confirmPassword))
-			throw new InvalidDataException("Passwords do not match");
+			throw new ValidationException("Passwords do not match");
 		Employee emp = dao.getEmployeeById(loggedInId);
 		String newHash = PasswordUtil.sha256(newPassword);
 		if (newHash.equals(emp.getPassword()))
-			throw new InvalidDataException("New password cannot be same as old password");
+			throw new ValidationException("New password cannot be same as old password");
 		dao.changePassword(loggedInId, newHash);
 		firstLogin = false;
 		logger.info("Password changed successfully for employeeId={}", loggedInId);
@@ -106,15 +112,14 @@ public class AuthService {
 			}
 		}
 		logger.error("Maximum password change attempts reached for employeeId={}", loggedInId);
-		throw new RuntimeException("Password change failed");
 	}
 	
-//	public void logout() {
-//	    loggedInId = null;
-//	    loggedInRole = null;
-//	    firstLogin = false;
-//	    System.out.println("Logged out successfully");
-//	}
+	public void logout() {
+	    logger.info("User logged out: {}", loggedInId);
+	    loggedInId = null;
+	    loggedInRole = null;
+	    firstLogin = false; 
+	}
 	
 	public boolean isFirstLogin() {
 		return firstLogin;

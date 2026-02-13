@@ -52,7 +52,8 @@ public class Employee {
 		this.firstLogin = firstLogin;
 	}
 	public void setId(String id) {
-		this.id = id.toLowerCase();
+	    if (id == null) throw new IllegalArgumentException("ID cannot be null");
+	    this.id = id.toLowerCase();
 	}
 	public void setName(String name) {
 		this.name = name;
@@ -100,10 +101,7 @@ public class Employee {
 		return Objects.hash(id);
 	}
 	@Override
-	public String toString() {
-		if(deleted) {
-			return "";
-		}
+	public String toString() { 
 		return "Emp ID: " + id + " | Name: " + name + " | Department: " + department + " | Address: " + address+ " | Email: " + email + " | Roles: " + role;
 	}
 

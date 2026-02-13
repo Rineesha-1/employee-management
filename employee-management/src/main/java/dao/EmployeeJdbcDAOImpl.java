@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import empUtil.ConfigUtil;
 import empUtil.DatabaseUtil;
 import empUtil.PasswordUtil;
-import exceptions.EmployeeNotFoundException;
-import exceptions.InvalidDataException;
+import exceptions.EmployeeNotFoundException; 
+import exceptions.ValidationException;
 import exceptions.EmployeeDataAccessException;
 import model.Employee;
 import java.sql.*;
@@ -278,7 +278,7 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 
 	@Override
 	public void grantRole(String id, String role)
-			throws InvalidDataException, EmployeeNotFoundException, EmployeeDataAccessException {
+			throws EmployeeNotFoundException, EmployeeDataAccessException {
 		getEmployeeById(id);
 		try (Connection conn = getConnection()) {
 			conn.setAutoCommit(false);
@@ -289,7 +289,7 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 					check.setString(2, role);
 					try (ResultSet rs = check.executeQuery()) {
 						if (rs.next()) {
-							throw new InvalidDataException("Employee already has this role");
+							throw new ValidationException("Employee already has this role");
 						}
 					}
 				}
@@ -314,7 +314,7 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 
 	@Override
 	public void revokeRole(String id, String role)
-			throws InvalidDataException, EmployeeNotFoundException, EmployeeDataAccessException {
+			throws EmployeeNotFoundException, EmployeeDataAccessException {
 		getEmployeeById(id);
 		try (Connection conn = getConnection()) {
 			conn.setAutoCommit(false);
@@ -330,7 +330,7 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 				}
 				if (!exists) {
 					conn.rollback();
-					throw new InvalidDataException("Employee does not have this role");
+					throw new ValidationException("Employee does not have this role");
 				}
 				int count;
 				try (PreparedStatement ps = conn
@@ -343,7 +343,7 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 				}
 				if (count == 1) {
 					conn.rollback();
-					throw new InvalidDataException("Employee must have at least one role");
+					throw new ValidationException("Employee must have at least one role");
 				}
 				try (PreparedStatement ps = conn
 						.prepareStatement("delete from employee_roles where emp_id=? and role=?")) {

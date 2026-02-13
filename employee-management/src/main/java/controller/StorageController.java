@@ -16,11 +16,17 @@ public class StorageController {
 	}
 	//starts the application
 	public static void startApplication() throws EmployeeDataAccessException {
-		Scanner sc = new Scanner(System.in);
-		logger.info("Application started");
-		EmployeeDAO dao = chooseStorage(sc); 
-		MenuController.start(dao, sc);
+	    Scanner sc = new Scanner(System.in);
+	    logger.info("Application started");
+	    EmployeeDAO dao = chooseStorage(sc);
+	    if (dao == null) {
+	        System.out.println("Application exiting...");
+	        return;
+	    } 
+	    while (MenuController.start(dao, sc)) { }
+	    System.out.println("Application exiting...");
 	}
+
 	//selects storage type
 	private static EmployeeDAO chooseStorage(Scanner sc) throws EmployeeDataAccessException {
 	    System.out.println("EMPLOYEE MANAGEMENT SYSTEM");
@@ -49,8 +55,7 @@ public class StorageController {
 	            attempts++;
 	        }
 	    }
-	    System.out.println("Max attempts reached. Exiting application...");
-	    System.exit(0);
+	    System.out.println("Max attempts reached."); 
 	    return null;  
 	}
 }
