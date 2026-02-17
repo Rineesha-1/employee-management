@@ -389,7 +389,7 @@ public class EmployeeJdbcDAOImpl implements EmployeeDAO {
 		try (Connection conn = getConnection();
 				PreparedStatement ps = conn.prepareStatement(
 						"select e.emp_id, e.name, e.department, e.address, e.email, " + "l.password, l.first_login "
-								+ "from employees e join employee_login l on e.emp_id = l.emp_id " + "where e.is_deleted=false"
+								+ "from employees e join employee_login l on e.emp_id = l.emp_id " + "where e.is_deleted=false "
 								+ "order by e.emp_id")) {
 			try (ResultSet rs = ps.executeQuery()) {
 				while (rs.next()) {
