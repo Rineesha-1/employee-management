@@ -8,6 +8,7 @@ import exceptions.ValidationException;
 import model.Employee;
 import empUtil.PasswordUtil;
 import java.util.Scanner;
+import empUtil.ValidationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,21 +26,7 @@ public class AuthService {
 		this.dao = dao;
 		this.sc = sc;
 	}
-
-	// basic rule for password
-	private void validatePassword(String password){
-		if (password == null) {
-			throw new ValidationException("Password can't be null");
-		}
-		String passwordRegex = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).{8,}$";
-		if (!password.matches(passwordRegex)) {
-			throw new ValidationException(
-	            "Password must be at least 8 characters" +
-	            "(1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character)"
-	        );
-	    }
-	}
-
+	
 	// login verification
 	public void login() throws EmployeeDataAccessException{
 		int attempts=0;
@@ -85,7 +72,7 @@ public class AuthService {
 	public void changePassword() throws EmployeeNotFoundException, EmployeeDataAccessException {
 		System.out.print("Enter new password: ");
 		String newPassword = sc.nextLine().trim();
-		validatePassword(newPassword);
+		ValidationUtil.validatePassword(newPassword);
 		System.out.print("Re-enter new password: ");
 		String confirmPassword = sc.nextLine().trim();
 		if (!newPassword.equals(confirmPassword))

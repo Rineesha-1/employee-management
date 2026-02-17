@@ -12,6 +12,7 @@ import exceptions.EmployeeDataAccessException;
 import exceptions.EmployeeNotFoundException;
 import exceptions.ValidationException;
 import model.Employee;
+import empUtil.ValidationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,41 +27,6 @@ public class EmployeeService {
         this.sc = sc;
         this.auth = auth;
     }
-
-    private String normalizeAndValidateId(String id) {
-        if (id == null || id.trim().isEmpty())
-            throw new ValidationException("Invalid employee ID");
-        if (!id.matches("(?i)tek\\d+"))
-            throw new ValidationException("Invalid employee ID");
-        return id.trim().toLowerCase();
-    }
-
-    private String normalizeRole(String role) {
-        if (role == null || role.trim().isEmpty())
-            throw new ValidationException("Invalid roles");
-        try {
-            return RoleOptions.valueOf(role.trim().toUpperCase()).name();
-        } catch (IllegalArgumentException e) {
-            throw new ValidationException("Invalid roles");
-        }
-    }
-
-    private String normalizeEmail(String email) {
-        if (email == null || email.trim().isEmpty())
-            throw new ValidationException("Invalid email");
-        String Email = email.trim().toLowerCase();
-        if (!Email.matches("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"))
-            throw new ValidationException("Invalid email");
-        return Email;
-    }
-
-    
-    private String validateNotBlank(String value, String field) throws ValidationException {
-        if (value == null || value.trim().isEmpty()) {
-            throw new ValidationException(field + " cannot be empty");
-        }
-        return value.trim();
-    }
     
     private String generateTempPassword() {
         String uuidPart = java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 5);
@@ -74,7 +40,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter emp name: ");
-                name = validateNotBlank(sc.nextLine(), "Name");
+                name = ValidationUtil.validateNotBlank(sc.nextLine(), "Name");
                 break;
             } catch (ValidationException e) {
                 attempts++;
@@ -90,7 +56,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter emp dept: ");
-                dept = validateNotBlank(sc.nextLine(), "Department");
+                dept = ValidationUtil.validateNotBlank(sc.nextLine(), "Department");
                 break;
             } catch (ValidationException e) {
                 attempts++;
@@ -106,7 +72,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter emp address: ");
-                address = validateNotBlank(sc.nextLine(), "Address");
+                address = ValidationUtil.validateNotBlank(sc.nextLine(), "Address");
                 break;
             } catch (ValidationException e) {
                 attempts++;
@@ -122,7 +88,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter emp email: ");
-                email = normalizeEmail(sc.nextLine());
+                email = ValidationUtil.validateEmail(sc.nextLine());
                 break;
             } catch (ValidationException e) {
                 attempts++;
@@ -138,7 +104,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter emp role (ADMIN/MANAGER/USER): ");
-                role = normalizeRole(sc.nextLine());
+                role = ValidationUtil.validateRole(sc.nextLine());
                 break;
             } catch (ValidationException e) {
                 attempts++;
@@ -166,7 +132,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter empId to delete: ");
-                empId = normalizeAndValidateId(sc.nextLine());
+                empId = ValidationUtil.validateId(sc.nextLine());
                 break;
             } catch (ValidationException e) {
                 attempts++;
@@ -191,7 +157,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter employee id: ");
-                empId = normalizeAndValidateId(sc.nextLine());
+                empId = ValidationUtil.validateId(sc.nextLine());
                 break;
             }catch (ValidationException e) {
                 attempts++;
@@ -214,7 +180,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter employee id: ");
-                empId = normalizeAndValidateId(sc.nextLine());
+                empId = ValidationUtil.validateId(sc.nextLine());
                 break;
             }catch (ValidationException e) {
                 attempts++;
@@ -229,7 +195,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter role to grant (ADMIN/MANAGER/USER): ");
-                role = normalizeRole(sc.nextLine());
+                role = ValidationUtil.validateRole(sc.nextLine());
                 break;
             } catch (ValidationException e){
                 attempts++;
@@ -250,7 +216,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter employee id: ");
-                empId = normalizeAndValidateId(sc.nextLine());
+                empId = ValidationUtil.validateId(sc.nextLine());
                 break;
             } catch (ValidationException e) {
                 attempts++;
@@ -268,7 +234,7 @@ public class EmployeeService {
         while (attempts < MAX_INPUT_ATTEMPTS) {
             try {
                 System.out.print("Enter role to revoke (ADMIN/MANAGER/USER): ");
-                role = normalizeRole(sc.nextLine());
+                role = ValidationUtil.validateRole(sc.nextLine());
                 break;
             } catch (ValidationException e) {
                 attempts++;
@@ -295,7 +261,7 @@ public class EmployeeService {
     }
  
     public void viewById(String id) throws EmployeeNotFoundException, EmployeeDataAccessException {
-        String empId = normalizeAndValidateId(id);
+        String empId = ValidationUtil.validateId(id);
         Employee emp = dao.getEmployeeById(empId);
         System.out.println(emp);
     }
@@ -314,14 +280,14 @@ public class EmployeeService {
             throws EmployeeNotFoundException, EmployeeDataAccessException {
         String empId;
         if (role == RoleOptions.USER) {
-            empId = normalizeAndValidateId(loggedInId);
+            empId = ValidationUtil.validateId(loggedInId);
         } else {
             int attempts = 0;
             empId = null;
             while (attempts < MAX_INPUT_ATTEMPTS) {
                 try {
                     System.out.print("Enter employee id: ");
-                    empId = normalizeAndValidateId(sc.nextLine());
+                    empId = ValidationUtil.validateId(sc.nextLine());
                     break;
                 } catch (ValidationException e) {
                     attempts++;
@@ -364,7 +330,7 @@ public class EmployeeService {
                         while (attempts < MAX_INPUT_ATTEMPTS) {
                             try {
                                 System.out.print("Enter new name: ");
-                                emp.setName(validateNotBlank(sc.nextLine(), "Name"));
+                                emp.setName(ValidationUtil.validateNotBlank(sc.nextLine(), "Name"));
                                 break;
                             } catch (ValidationException e) {
                                 attempts++;
@@ -379,7 +345,7 @@ public class EmployeeService {
                         while (attempts < MAX_INPUT_ATTEMPTS) {
                             try {
                                 System.out.print("Enter new department: ");
-                                emp.setDepartment(validateNotBlank(sc.nextLine(), "Department"));
+                                emp.setDepartment(ValidationUtil.validateNotBlank(sc.nextLine(), "Department"));
                                 break;
                             } catch (ValidationException e) {
                                 attempts++;
@@ -392,7 +358,7 @@ public class EmployeeService {
                         while (attempts < MAX_INPUT_ATTEMPTS) {
                             try {
                                 System.out.print("Enter new address: ");
-                                emp.setAddress(validateNotBlank(sc.nextLine(), "Address"));
+                                emp.setAddress(ValidationUtil.validateNotBlank(sc.nextLine(), "Address"));
                                 break;
                             } catch (ValidationException e) {
                                 attempts++;
@@ -405,7 +371,7 @@ public class EmployeeService {
                         while (attempts < MAX_INPUT_ATTEMPTS) {
                             try {
                                 System.out.print("Enter new email: ");
-                                emp.setEmail(normalizeEmail(sc.nextLine()));
+                                emp.setEmail(ValidationUtil.validateEmail(sc.nextLine()));
                                 break;
                             } catch (ValidationException e) {
                                 attempts++;
@@ -420,7 +386,7 @@ public class EmployeeService {
                         while (attempts < MAX_INPUT_ATTEMPTS) {
                             try {
                                 System.out.print("Enter new name: ");
-                                emp.setName(validateNotBlank(sc.nextLine(), "Name"));
+                                emp.setName(ValidationUtil.validateNotBlank(sc.nextLine(), "Name"));
                                 break;
                             } catch (ValidationException e) {
                                 attempts++;
@@ -431,7 +397,7 @@ public class EmployeeService {
                         while (attempts < MAX_INPUT_ATTEMPTS) {
                             try {
                                 System.out.print("Enter new department: ");
-                                emp.setDepartment(validateNotBlank(sc.nextLine(), "Department"));
+                                emp.setDepartment(ValidationUtil.validateNotBlank(sc.nextLine(), "Department"));
                                 break;
                             } catch (ValidationException e) {
                                 attempts++;
@@ -442,7 +408,7 @@ public class EmployeeService {
                         while (attempts < MAX_INPUT_ATTEMPTS) {
                             try {
                                 System.out.print("Enter new address: ");
-                                emp.setAddress(validateNotBlank(sc.nextLine(), "Address"));
+                                emp.setAddress(ValidationUtil.validateNotBlank(sc.nextLine(), "Address"));
                                 break;
                             } catch (ValidationException e) {
                                 attempts++;
@@ -453,7 +419,7 @@ public class EmployeeService {
                         while (attempts < MAX_INPUT_ATTEMPTS) {
                             try {
                                 System.out.print("Enter new email: ");
-                                emp.setEmail(normalizeEmail(sc.nextLine()));
+                                emp.setEmail(ValidationUtil.validateEmail(sc.nextLine()));
                                 break;
                             } catch (ValidationException e) {
                                 attempts++;
