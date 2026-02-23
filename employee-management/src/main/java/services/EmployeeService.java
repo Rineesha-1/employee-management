@@ -255,9 +255,7 @@ public class EmployeeService {
             System.out.println("No employees found");
             return;
         }
-        for (Employee emp : employees) {
-            System.out.println(emp);
-        }
+        employees.stream().forEach(emp -> System.out.println(emp));
     }
  
     public void viewById(String id) throws EmployeeNotFoundException, EmployeeDataAccessException {

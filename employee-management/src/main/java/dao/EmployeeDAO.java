@@ -1,7 +1,6 @@
 package dao;
 
 import java.util.List; 
-import exceptions.ValidationException;
 import exceptions.EmployeeDataAccessException;
 import exceptions.EmployeeNotFoundException;
 import model.Employee;
