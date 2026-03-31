@@ -1,11 +1,12 @@
 //creating 3 tables 
 CREATE TABLE employees (
-    id SERIAL PRIMARY KEY,
-    emp_id VARCHAR(20) UNIQUE NOT NULL,
+--    id SERIAL PRIMARY KEY,
+    emp_id VARCHAR(20) primary key,
     name VARCHAR(100) NOT NULL,
     department VARCHAR(50) NOT NULL,
     address VARCHAR(200) NOT NULL,
-    email VARCHAR(100) NOT NULL
+    email VARCHAR(100) NOT NULL,
+    is_deleted BOOLEAN DEFAULT FALSE  
 );
 
 CREATE TABLE employee_login (

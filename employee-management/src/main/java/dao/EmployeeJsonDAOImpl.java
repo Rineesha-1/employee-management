@@ -9,8 +9,8 @@ import empUtil.PasswordUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import empUtil.ConfigUtil;
-import exceptions.EmployeeNotFoundException;
-import exceptions.InvalidDataException;
+import exceptions.EmployeeNotFoundException; 
+import exceptions.ValidationException;
 import model.Employee;
 
 //DAO implementation that stores employee data in JSON file
@@ -78,6 +78,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 			return null;
 		String key = id.trim().toLowerCase();
 		for (Employee e : employees) {
+			if (e.isDeleted()) continue;
 			if (e.getId() != null && e.getId().equalsIgnoreCase(key))
 				return e;
 		}
@@ -177,7 +178,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 		Employee emp = findByIdInternal(id);
 		if (emp == null)
 			throw new EmployeeNotFoundException("Employee not found");
-		employees.remove(emp);
+		emp.setDeleted(true);
 		save();
 	}
 //used to change self password
@@ -202,13 +203,13 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 	}
 //grants a new role
 	@Override
-	public void grantRole(String id, String role) throws InvalidDataException, EmployeeNotFoundException {
+	public void grantRole(String id, String role) throws EmployeeNotFoundException {
 		Employee emp = findByIdInternal(id);
 		if (emp == null)
 			throw new EmployeeNotFoundException("Employee not found");
 		for (String r : emp.getRole()) {
 			if (r.equalsIgnoreCase(role))
-				throw new InvalidDataException("Employee already has this role");
+				throw new ValidationException("Employee already has this role");
 		}
 		List<String> roles = new ArrayList<>(emp.getRole());
 		roles.add(role);
@@ -217,8 +218,7 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 	}
 //revokes a role from employee
 	@Override 
-	public void revokeRole(String id, String role)
-	        throws InvalidDataException, EmployeeNotFoundException {
+	public void revokeRole(String id, String role) throws EmployeeNotFoundException {
 	    Employee emp = findByIdInternal(id);
 	    if (emp == null) {
 	        throw new EmployeeNotFoundException("Employee not found");
@@ -232,10 +232,10 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 	        }
 	    }
 	    if (!found) {
-	        throw new InvalidDataException("Employee does not have this role");
+	        throw new ValidationException("Employee does not have this role");
 	    }
 	    if (roles.size() == 1) {
-	        throw new InvalidDataException("Employee must have at least one role");
+	        throw new ValidationException("Employee must have at least one role");
 	    }
 	    for (int i = 0; i < roles.size(); i++) {
 	        if (roles.get(i).equalsIgnoreCase(role)) {
@@ -258,6 +258,12 @@ public class EmployeeJsonDAOImpl implements EmployeeDAO {
 //returns all employees
 	@Override
 	public List<Employee> getAllEmployees() {
-		return new ArrayList<>(employees);
+	    List<Employee> list = new ArrayList<>(); 
+	    for (Employee e : employees) { 
+	        if (!e.isDeleted()) {
+	            list.add(e);
+	        }
+	    }
+	    return list;
 	}
 }

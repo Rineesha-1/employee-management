@@ -179,6 +179,42 @@
   "password" : "a14c0b23785ee17f1fe432c6a8c6834c8643fc691f66be937e739c3165b05f1a",
   "firstLogin" : false
 }, {
+  "id" : "tek28",
+  "name" : "Test User",
+  "department" : "IT",
+  "address" : "Test Address",
+  "email" : "test@test.com",
+  "role" : [ "ADMIN" ],
+  "password" : "b6bc7b58510319a151d168ba3d5aecb3ac0a9708d06dd930f37fbc89b6cdc697",
+  "firstLogin" : true
+}, {
+  "id" : "tek29",
+  "name" : "User4",
+  "department" : "IT",
+  "address" : "Addr",
+  "email" : "u4@test.com",
+  "role" : [ "USER" ],
+  "password" : "eecca0b58031170c3735fd4a52e7533d3bdfd662aebdb46a36b8ce697e300060",
+  "firstLogin" : true
+}, {
+  "id" : "tek30",
+  "name" : "User2",
+  "department" : "IT",
+  "address" : "Addr",
+  "email" : "u2@test.com",
+  "role" : [ "USER" ],
+  "password" : "b6bc7b58510319a151d168ba3d5aecb3ac0a9708d06dd930f37fbc89b6cdc697",
+  "firstLogin" : true
+}, {
+  "id" : "tek31",
+  "name" : "User3",
+  "department" : "IT",
+  "address" : "Addr",
+  "email" : "u3@test.com",
+  "role" : [ "USER" ],
+  "password" : "a14c0b23785ee17f1fe432c6a8c6834c8643fc691f66be937e739c3165b05f1a",
+  "firstLogin" : false
+}, {
   "id" : "tek4",
   "name" : "john",
   "department" : "hr",

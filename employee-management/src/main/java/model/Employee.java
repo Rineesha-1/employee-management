@@ -13,6 +13,7 @@ public class Employee {
 	private List<String> role;
 	private String password;
 	private boolean firstLogin = true;
+	private boolean deleted = false;
 
 	public Employee() {
 		role = new ArrayList<>();
@@ -41,11 +42,18 @@ public class Employee {
 	public boolean isFirstLogin() {
 		return firstLogin;
 	}
+	public boolean isDeleted() {
+		return deleted;
+	}
+	public void setDeleted(boolean deleted) {
+		this.deleted=deleted;
+	}
 	public void setFirstLogin(boolean firstLogin) {
 		this.firstLogin = firstLogin;
 	}
 	public void setId(String id) {
-		this.id = id.toLowerCase();
+	    if (id == null) throw new IllegalArgumentException("ID cannot be null");
+	    this.id = id.toLowerCase();
 	}
 	public void setName(String name) {
 		this.name = name;
@@ -93,7 +101,7 @@ public class Employee {
 		return Objects.hash(id);
 	}
 	@Override
-	public String toString() {
+	public String toString() { 
 		return "Emp ID: " + id + " | Name: " + name + " | Department: " + department + " | Address: " + address+ " | Email: " + email + " | Roles: " + role;
 	}
 

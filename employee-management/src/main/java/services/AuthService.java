@@ -2,11 +2,16 @@ package services;
 
 import enums.RoleOptions;
 import dao.EmployeeDAO;
-import exceptions.EmployeeNotFoundException;
-import exceptions.InvalidDataException;
+import exceptions.EmployeeDataAccessException;
+import exceptions.EmployeeNotFoundException; 
+import exceptions.ValidationException;
 import model.Employee;
 import empUtil.PasswordUtil;
 import java.util.Scanner;
+import empUtil.ValidationUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class AuthService {
 	private final EmployeeDAO dao;
@@ -14,81 +19,95 @@ public class AuthService {
 	private String loggedInId;
 	private RoleOptions loggedInRole;
 	private boolean firstLogin;
-
+	private static final Logger logger =LoggerFactory.getLogger(AuthService.class);
+	private static final int MAX_LOGIN_ATTEMPTS = 3;
+	private static final int MAX_PASSWORD_CHANGE_ATTEMPTS=3;
 	public AuthService(EmployeeDAO dao, Scanner sc) {
 		this.dao = dao;
 		this.sc = sc;
 	}
-
-	// basic rule for password
-	private void validatePassword(String password) throws InvalidDataException {
-		if (password == null) {
-			throw new InvalidDataException("Password can't be null");
-		}
-		String passwordRegex = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).{8,}$";
-		if (!password.matches(passwordRegex)) {
-	        throw new InvalidDataException(
-	            "Password must be at least 8 characters" +
-	            "(1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character)"
-	        );
-	    }
-	}
-
+	
 	// login verification
-	public void login() {
-		while (true) {
-			System.out.println("LOGIN CREDENTIALS");
+	public void login() throws EmployeeDataAccessException{
+		int attempts=0;
+		while (attempts<MAX_LOGIN_ATTEMPTS) {
+			logger.info("LOGIN CREDENTIALS");
 			System.out.print("Employee ID: ");
 			String id = sc.nextLine().trim().toLowerCase();
+			if (id.isEmpty()) {
+	            attempts++;
+	            System.out.println("Employee ID cannot be empty"); 
+	            continue;
+	        }
 			System.out.print("Password: ");
 			String password = sc.nextLine().trim();
+			if (password.isEmpty()) {
+	            attempts++;
+	            System.out.println("Password cannot be empty"); 
+	            continue;
+	        }
 			try {
-				Employee emp = dao.getEmployeeById(id);
+				Employee emp = dao.getEmployeeById(id); 
 				if (!PasswordUtil.sha256(password).equals(emp.getPassword())) {
 					System.out.println("Invalid login credentials");
+					logger.warn("Invalid login credentials for employeeId={}", id);
+					attempts++;
 					continue;
 				}
 				loggedInId = emp.getId();
 				loggedInRole = resolveRole(emp);
 				firstLogin = emp.isFirstLogin();
-				System.out.println("Login successful");
+				logger.info("Login successful for employeeId={}", loggedInId);
 				return;
 			} catch (EmployeeNotFoundException e) {
-				System.out.println("Invalid login credentials");
+				logger.warn("Invalid login attempt for employeeId={}", id);
+				attempts++;
 			}
 		}
+		logger.error("Maximum login attempts reached.");
+		throw new ValidationException("Maximum login attempts reached. Login failed.");
 	}
 
 	// enables employee to change password
-	public void changePassword() throws InvalidDataException, EmployeeNotFoundException {
+	public void changePassword() throws EmployeeNotFoundException, EmployeeDataAccessException {
 		System.out.print("Enter new password: ");
-		String p1 = sc.nextLine().trim();
-		validatePassword(p1);
+		String newPassword = sc.nextLine().trim();
+		ValidationUtil.validatePassword(newPassword);
 		System.out.print("Re-enter new password: ");
-		String p2 = sc.nextLine().trim();
-		if (!p1.equals(p2))
-			throw new InvalidDataException("Passwords do not match");
+		String confirmPassword = sc.nextLine().trim();
+		if (!newPassword.equals(confirmPassword))
+			throw new ValidationException("Passwords do not match");
 		Employee emp = dao.getEmployeeById(loggedInId);
-		String newHash = PasswordUtil.sha256(p1);
+		String newHash = PasswordUtil.sha256(newPassword);
 		if (newHash.equals(emp.getPassword()))
-			throw new InvalidDataException("New password cannot be same as old password");
+			throw new ValidationException("New password cannot be same as old password");
 		dao.changePassword(loggedInId, newHash);
 		firstLogin = false;
-		System.out.println("Password changed successfully");
+		logger.info("Password changed successfully for employeeId={}", loggedInId);
 	}
 
 	// to change default password on first login
 	public void forceChangePassword() {
-		while (true) {
+		int attempts=0;
+		while (attempts<MAX_PASSWORD_CHANGE_ATTEMPTS) {
 			try {
 				changePassword();
 				return;
 			} catch (Exception e) {
-				System.out.println(e.getMessage());
+				logger.warn("Password change failed: {}", e.getMessage());
+				attempts++;
 			}
 		}
+		logger.error("Maximum password change attempts reached for employeeId={}", loggedInId);
 	}
-
+	
+	public void logout() {
+	    logger.info("User logged out: {}", loggedInId);
+	    loggedInId = null;
+	    loggedInRole = null;
+	    firstLogin = false; 
+	}
+	
 	public boolean isFirstLogin() {
 		return firstLogin;
 	}

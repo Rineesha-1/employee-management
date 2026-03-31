@@ -3,23 +3,16 @@ package empUtil;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Properties;
-import java.io.InputStream;
 
 public class DatabaseUtil {
-	//db properties
-	private static final Properties property = new Properties();
-	static {
-		try {
-			InputStream in = DatabaseUtil.class.getClassLoader().getResourceAsStream("db.properties");
-			property.load(in);
-		} catch (Exception e) {
-			throw new RuntimeException("Cannot load db.properties");
-		}
-	}
 
-	public static Connection getConnection() throws SQLException {
-		return DriverManager.getConnection(property.getProperty("url"), property.getProperty("username"),
-				property.getProperty("password"));
-	}
+    public static Connection getConnection() throws SQLException {
+        String url  = System.getenv("DB_URL");
+        String user = System.getenv("DB_USER");
+        String password = System.getenv("DB_PASSWORD");
+        if (url == null || user == null || password == null) {
+            throw new SQLException("Database environment variables not set properly");
+        }
+        return DriverManager.getConnection(url, user, password);
+    }
 }
